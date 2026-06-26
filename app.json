@@ -1,25 +1,44 @@
 {
   "expo": {
-    "name": "app-funkos",
+    "name": "Funkomacetas",
     "slug": "app-funkos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.funkomacetas.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Funkomacetas necesita acceso a la camara para tomar fotos de productos",
+        "NSPhotoLibraryUsageDescription": "Funkomacetas necesita acceso a la biblioteca de fotos para seleccionar imagenes"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#6C5CE7",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.funkomacetas.app",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Funkomacetas necesita acceso a la biblioteca de fotos",
+          "cameraPermission": "Funkomacetas necesita acceso a la camara para tomar fotos"
+        }
+      ]
+    ]
   }
 }
