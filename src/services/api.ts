@@ -1,7 +1,22 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Constants } from 'expo-constants';
 
-const API_URL = 'http://sistema-funkos.test/api';
+const getApiUrl = (): string => {
+  const extra = Constants.expoConfig?.extra;
+
+  if (extra?.apiUrlStaging && extra?.eas?.channel === 'staging') {
+    return extra.apiUrlStaging;
+  }
+
+  if (extra?.apiUrlProduction) {
+    return extra.apiUrlProduction;
+  }
+
+  return extra?.apiUrl || 'http://sistema-funkos.test/api';
+};
+
+const API_URL = getApiUrl();
 
 class ApiService {
   private api: AxiosInstance;

@@ -39,6 +39,13 @@
           "cameraPermission": "Funkomacetas necesita acceso a la camara para tomar fotos"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "app-funkos"
+      },
+      "apiUrlStaging": "http://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api",
+      "apiUrlProduction": "http://sistema-funkos.test/api"
+    }
   }
 }
