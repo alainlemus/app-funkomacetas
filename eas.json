@@ -14,7 +14,7 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "API_URL": "http://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api"
+        "API_URL": "https://eljardindelasmacetas.com/api"
       }
     },
     "production": {

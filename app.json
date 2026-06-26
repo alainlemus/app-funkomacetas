@@ -23,9 +23,14 @@
       },
       "package": "com.funkomacetas.app",
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -41,11 +46,18 @@
       ]
     ],
     "extra": {
+      "apiUrlStaging": "https://eljardindelasmacetas.com/api",
+      "apiUrlProduction": "http://sistema-funkos.test/api",
       "eas": {
-        "projectId": "app-funkos"
-      },
-      "apiUrlStaging": "http://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api",
-      "apiUrlProduction": "http://sistema-funkos.test/api"
+        "projectId": "1e0910ac-a54c-4f41-9762-763ce701cfa9"
+      }
+    },
+    "owner": "alainlemus",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1e0910ac-a54c-4f41-9762-763ce701cfa9"
     }
   }
 }

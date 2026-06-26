@@ -3,17 +3,15 @@ import * as SecureStore from 'expo-secure-store';
 import { Constants } from 'expo-constants';
 
 const getApiUrl = (): string => {
-  const extra = Constants.expoConfig?.extra;
-
-  if (extra?.apiUrlStaging && extra?.eas?.channel === 'staging') {
-    return extra.apiUrlStaging;
+  if (process.env.API_URL) {
+    return process.env.API_URL;
   }
 
-  if (extra?.apiUrlProduction) {
-    return extra.apiUrlProduction;
+  if (process.env.STAGING_API_URL) {
+    return process.env.STAGING_API_URL;
   }
 
-  return extra?.apiUrl || 'http://sistema-funkos.test/api';
+  return 'http://sistema-funkos.test/api';
 };
 
 const API_URL = getApiUrl();
