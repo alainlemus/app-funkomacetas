@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Funkomacetas",
+    "name": "El Jardín de las Macetas",
     "slug": "app-funkos",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -17,9 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6C5CE7",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/logo.png"
       },
       "package": "com.funkomacetas.app",
       "permissions": [
@@ -34,7 +32,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo.png"
     },
     "plugins": [
       [
@@ -46,8 +44,6 @@
       ]
     ],
     "extra": {
-      "apiUrlStaging": "https://eljardindelasmacetas.com/api",
-      "apiUrlProduction": "http://sistema-funkos.test/api",
       "eas": {
         "projectId": "1e0910ac-a54c-4f41-9762-763ce701cfa9"
       }

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
@@ -42,10 +43,8 @@ export function LoginScreen() {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>F</Text>
-          </View>
-          <Text style={styles.title}>Funkomacetas</Text>
+          <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
+          <Text style={styles.title}>El Jardín de las Macetas</Text>
           <Text style={styles.subtitle}>Administracion</Text>
         </View>
 
@@ -97,25 +96,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: '#6C5CE7',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 16,
     marginBottom: 16,
-  },
-  logoText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#2D3436',
     marginBottom: 4,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
