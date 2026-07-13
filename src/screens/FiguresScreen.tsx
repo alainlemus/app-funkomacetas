@@ -10,18 +10,12 @@ import {
   RefreshControl,
   Modal,
   TextInput,
-  Switch,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../theme/ThemeContext';
-import { Skeleton, SkeletonCard } from '../components/Skeleton';
 
 export function FiguresScreen({ navigation }: any) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const [figures, setFigures] = useState<Figure[]>([]);
   const [filteredFigures, setFilteredFigures] = useState<Figure[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +25,6 @@ export function FiguresScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [description, setDescription] = useState('');
-  const [isActive, setIsActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -79,13 +72,11 @@ export function FiguresScreen({ navigation }: any) {
       setName(figure.name);
       setSku(figure.sku);
       setDescription(figure.description || '');
-      setIsActive(figure.is_active);
     } else {
       setEditingFigure(null);
       setName('');
       setSku('');
       setDescription('');
-      setIsActive(true);
     }
     setModalVisible(true);
   };
@@ -107,14 +98,12 @@ export function FiguresScreen({ navigation }: any) {
           name: name.trim(),
           sku: sku.trim(),
           description: description.trim() || undefined,
-          is_active: isActive,
         });
       } else {
         await api.createFigure({
           name: name.trim(),
           sku: sku.trim(),
           description: description.trim() || undefined,
-          is_active: isActive,
         });
       }
       setModalVisible(false);
@@ -150,12 +139,13 @@ export function FiguresScreen({ navigation }: any) {
 
   const renderFigure = ({ item }: { item: Figure }) => (
     <TouchableOpacity
-      style={[styles.card, !item.is_active && styles.cardInactive]}
+      style={styles.card}
       onPress={() => openModal(item)}
+      onLongPress={() => handleDelete(item)}
     >
       <View style={styles.cardContent}>
         <View style={styles.iconContainer}>
-          <Ionicons name="happy-outline" size={26} color="#6C5CE7" />
+          <Text style={styles.icon}>🎭</Text>
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{item.name}</Text>
@@ -167,60 +157,24 @@ export function FiguresScreen({ navigation }: any) {
             {item.funkomacetas_count || 0} productos
           </Text>
         </View>
-        <View style={styles.cardActions}>
-          <TouchableOpacity
-            style={[styles.actionBtn, item.is_active ? styles.btnVisible : styles.btnHidden]}
-            onPress={async () => {
-              try {
-                await api.toggleFigureActive(item.id);
-                fetchFigures();
-              } catch {
-                Alert.alert('Error', 'No se pudo cambiar la visibilidad');
-              }
-            }}
-          >
-            <Ionicons
-              name={item.is_active ? 'eye-outline' : 'eye-off-outline'}
-              size={18}
-              color="#fff"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.btnDelete]}
-            onPress={() => handleDelete(item)}
-          >
-            <Ionicons name="trash-outline" size={18} color="#fff" />
-          </TouchableOpacity>
-        </View>
       </View>
     </TouchableOpacity>
   );
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
-        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-          <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-            <Skeleton width={150} height={22} style={{ marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.3)' }} />
-            <Skeleton width="100%" height={42} borderRadius={10} style={{ backgroundColor: 'rgba(255,255,255,0.85)' }} />
-          </View>
-          <View style={styles.listContent}>
-            <SkeletonCard height={70} />
-            <SkeletonCard height={70} />
-            <SkeletonCard height={70} />
-          </View>
-        </SafeAreaView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
+    <View style={styles.container}>
+      <View style={styles.headerBg} />
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-          <Text style={[styles.headerTitle, { color: '#fff' }]}>Figuras</Text>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Figuras</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar figura..."
@@ -240,7 +194,7 @@ export function FiguresScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="happy-outline" size={64} color="#DFE6E9" style={{ marginBottom: 12 }} />
+            <Text style={styles.emptyIcon}>🎭</Text>
             <Text style={styles.emptyText}>
               {searchQuery ? 'No se encontraron figuras' : 'No hay figuras'}
             </Text>
@@ -249,7 +203,7 @@ export function FiguresScreen({ navigation }: any) {
       />
 
       <TouchableOpacity style={styles.fab} onPress={() => openModal()}>
-        <Ionicons name="add" size={32} color="#fff" />
+        <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -265,7 +219,6 @@ export function FiguresScreen({ navigation }: any) {
               value={name}
               onChangeText={setName}
               placeholder="Nombre de la figura"
-              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>SKU</Text>
@@ -275,7 +228,6 @@ export function FiguresScreen({ navigation }: any) {
               onChangeText={setSku}
               placeholder="SKU-001"
               autoCapitalize="characters"
-              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>Descripcion</Text>
@@ -284,19 +236,9 @@ export function FiguresScreen({ navigation }: any) {
               value={description}
               onChangeText={setDescription}
               placeholder="Descripcion (opcional)"
-              placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={3}
             />
-
-            <View style={styles.switchRow}>
-              <Text style={styles.label}>Activa</Text>
-              <Switch
-                value={isActive}
-                onValueChange={setIsActive}
-                trackColor={{ false: '#DFE6E9', true: '#A29BFE' }}
-              />
-            </View>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -325,9 +267,10 @@ export function FiguresScreen({ navigation }: any) {
   );
 }
 
-const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
     position: 'relative',
   },
   safeArea: {
@@ -335,6 +278,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   },
   headerBg: {
     height: 100,
+    backgroundColor: '#6C5CE7',
   },
   centered: {
     flex: 1,
@@ -345,17 +289,12 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
+    backgroundColor: '#6C5CE7',
   },
   headerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
     marginBottom: 12,
   },
   searchInput: {
@@ -370,7 +309,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     padding: 12,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 8,
     shadowColor: '#000',
@@ -379,36 +318,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     shadowRadius: 2,
     elevation: 2,
   },
-  cardInactive: {
-    opacity: 0.6,
-  },
   cardContent: {
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
-  },
-  cardActions: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  actionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnVisible: {
-    backgroundColor: '#00B894',
-  },
-  btnHidden: {
-    backgroundColor: '#636E72',
-  },
-  btnDelete: {
-    backgroundColor: '#E17055',
-  },
-  actionIcon: {
-    fontSize: 16,
   },
   iconContainer: {
     width: 50,
@@ -428,22 +341,22 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   cardName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text,
+    color: '#2D3436',
   },
   cardSku: {
     fontSize: 12,
-    color: colors.primary,
+    color: '#6C5CE7',
     fontWeight: '500',
     marginTop: 2,
   },
   cardDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: '#636E72',
     marginTop: 2,
   },
   cardCount: {
     fontSize: 11,
-    color: colors.textMuted,
+    color: '#B2BEC3',
     marginTop: 4,
   },
   empty: {
@@ -453,11 +366,12 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     paddingTop: 80,
   },
   emptyIcon: {
+    fontSize: 56,
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: '#636E72',
   },
   fab: {
     position: 'absolute',
@@ -466,7 +380,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
+    backgroundColor: '#6C5CE7',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -487,42 +401,35 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     padding: 20,
   },
   modalContent: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.text,
+    color: '#2D3436',
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: '#2D3436',
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: colors.inputBg,
-    color: colors.text,
+    backgroundColor: '#F8F9FA',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#DFE6E9',
   },
   textArea: {
     height: 80,
     textAlignVertical: 'top',
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
   },
   modalButtons: {
     flexDirection: 'row',

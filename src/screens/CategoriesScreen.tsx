@@ -12,16 +12,11 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../theme/ThemeContext';
-import { Skeleton, SkeletonCard } from '../components/Skeleton';
 
 export function CategoriesScreen({ navigation }: any) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,8 +132,9 @@ export function CategoriesScreen({ navigation }: any) {
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[styles.card, !item.is_active && styles.cardInactive]}
+      style={styles.card}
       onPress={() => openModal(item)}
+      onLongPress={() => handleDelete(item)}
     >
       <View style={styles.cardContent}>
         <View style={styles.cardInfo}>
@@ -150,30 +146,8 @@ export function CategoriesScreen({ navigation }: any) {
             {item.funkomacetas_count || 0} productos
           </Text>
         </View>
-        <View style={styles.cardActions}>
-          <TouchableOpacity
-            style={[styles.actionBtn, item.is_active ? styles.btnVisible : styles.btnHidden]}
-            onPress={async () => {
-              try {
-                await api.toggleCategoryActive(item.id);
-                fetchCategories();
-              } catch {
-                Alert.alert('Error', 'No se pudo cambiar la visibilidad');
-              }
-            }}
-          >
-            <Ionicons
-              name={item.is_active ? 'eye-outline' : 'eye-off-outline'}
-              size={18}
-              color="#fff"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.btnDelete]}
-            onPress={() => handleDelete(item)}
-          >
-            <Ionicons name="trash-outline" size={18} color="#fff" />
-          </TouchableOpacity>
+        <View style={[styles.statusBadge, item.is_active ? styles.activeBadge : styles.inactiveBadge]}>
+          <Text style={styles.statusText}>{item.is_active ? 'Activo' : 'Inactivo'}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -181,29 +155,18 @@ export function CategoriesScreen({ navigation }: any) {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
-        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-          <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-            <Skeleton width={150} height={22} style={{ marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.3)' }} />
-            <Skeleton width="100%" height={42} borderRadius={10} style={{ backgroundColor: 'rgba(255,255,255,0.85)' }} />
-          </View>
-          <View style={styles.listContent}>
-            <SkeletonCard height={70} />
-            <SkeletonCard height={70} />
-            <SkeletonCard height={70} />
-          </View>
-        </SafeAreaView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
+    <View style={styles.container}>
+      <View style={styles.headerBg} />
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-          <Text style={[styles.headerTitle, { color: '#fff' }]}>Categorias</Text>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Categorias</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar categoria..."
@@ -223,7 +186,7 @@ export function CategoriesScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="pricetag-outline" size={64} color="#DFE6E9" style={{ marginBottom: 12 }} />
+            <Text style={styles.emptyIcon}>🏷️</Text>
             <Text style={styles.emptyText}>
               {searchQuery ? 'No se encontraron categorias' : 'No hay categorias'}
             </Text>
@@ -232,7 +195,7 @@ export function CategoriesScreen({ navigation }: any) {
       />
 
       <TouchableOpacity style={styles.fab} onPress={() => openModal()}>
-        <Ionicons name="add" size={32} color="#fff" />
+        <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -248,7 +211,6 @@ export function CategoriesScreen({ navigation }: any) {
               value={name}
               onChangeText={setName}
               placeholder="Nombre de la categoria"
-              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>Descripcion</Text>
@@ -257,7 +219,6 @@ export function CategoriesScreen({ navigation }: any) {
               value={description}
               onChangeText={setDescription}
               placeholder="Descripcion (opcional)"
-              placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={3}
             />
@@ -298,9 +259,10 @@ export function CategoriesScreen({ navigation }: any) {
   );
 }
 
-const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
     position: 'relative',
   },
   safeArea: {
@@ -308,6 +270,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   },
   headerBg: {
     height: 100,
+    backgroundColor: '#6C5CE7',
   },
   centered: {
     flex: 1,
@@ -318,17 +281,12 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
+    backgroundColor: '#6C5CE7',
   },
   headerTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
     marginBottom: 12,
   },
   searchInput: {
@@ -343,7 +301,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     padding: 12,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 8,
     shadowColor: '#000',
@@ -352,36 +310,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     shadowRadius: 2,
     elevation: 2,
   },
-  cardInactive: {
-    opacity: 0.6,
-  },
   cardContent: {
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
-  },
-  cardActions: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  actionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnVisible: {
-    backgroundColor: '#00B894',
-  },
-  btnHidden: {
-    backgroundColor: '#636E72',
-  },
-  btnDelete: {
-    backgroundColor: '#E17055',
-  },
-  actionIcon: {
-    fontSize: 16,
   },
   cardInfo: {
     flex: 1,
@@ -389,16 +321,16 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
   cardName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text,
+    color: '#2D3436',
   },
   cardDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: '#636E72',
     marginTop: 2,
   },
   cardCount: {
     fontSize: 11,
-    color: colors.textMuted,
+    color: '#B2BEC3',
     marginTop: 4,
   },
   statusBadge: {
@@ -407,10 +339,10 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     borderRadius: 12,
   },
   activeBadge: {
-    backgroundColor: colors.success,
+    backgroundColor: '#00B894',
   },
   inactiveBadge: {
-    backgroundColor: colors.textMuted,
+    backgroundColor: '#636E72',
   },
   statusText: {
     color: '#fff',
@@ -424,6 +356,7 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     paddingTop: 80,
   },
   emptyIcon: {
+    fontSize: 56,
     marginBottom: 12,
   },
   emptyText: {
@@ -458,32 +391,31 @@ const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleShe
     padding: 20,
   },
   modalContent: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.text,
+    color: '#2D3436',
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: '#2D3436',
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: colors.inputBg,
-    color: colors.text,
+    backgroundColor: '#F8F9FA',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#DFE6E9',
   },
   textArea: {
     height: 80,

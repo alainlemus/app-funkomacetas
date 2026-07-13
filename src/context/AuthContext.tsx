@@ -50,11 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    try {
-      await api.logout();
-    } catch {}
-    await SecureStore.deleteItemAsync('api_token');
-    await SecureStore.deleteItemAsync('user');
+    await api.logout();
     setUser(null);
   };
 
