@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { Constants } from 'expo-constants';
 
 const getApiUrl = (): string => {
   if (process.env.API_URL) {
