@@ -29,6 +29,7 @@ interface LowStockItem {
   stock: number;
   min_stock: number;
   image: string | null;
+  images: string[] | null;
 }
 
 export function DashboardScreen({ navigation }: any) {
@@ -65,6 +66,7 @@ export function DashboardScreen({ navigation }: any) {
         stock: p.stock,
         min_stock: p.min_stock,
         image: p.image,
+        images: p.images,
       })));
 
       setStats({
@@ -176,38 +178,63 @@ export function DashboardScreen({ navigation }: any) {
         {lowStockItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>⚠️ Productos con Stock Bajo</Text>
-            {lowStockItems.map((item) => (
-              <View key={item.id} style={styles.lowStockItem}>
-                <View style={styles.lowStockImage}>
-                  {item.image ? (
-                    <Image source={{ uri: item.image }} style={styles.thumbImage} />
-                  ) : (
-                    <View style={styles.thumbPlaceholder}>
-                      <Text>📦</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.lowStockInfo}>
-                  <Text style={styles.lowStockName} numberOfLines={1}>{item.name}</Text>
-                  <Text style={styles.lowStockStock}>
-                    Stock: {item.stock} / Min: {item.min_stock}
-                  </Text>
-                </View>
+            {lowStockItems.map((item) => {
+              const allImages = [item.image, ...(item.images ?? [])].filter(Boolean) as string[];
+              return (
                 <TouchableOpacity
-                  style={styles.addStockBtn}
-                  onPress={async () => {
-                    try {
-                      await api.updateStock(item.id, item.min_stock + 10);
-                      fetchData();
-                    } catch {
-                      Alert.alert('Error', 'No se pudo actualizar el stock');
-                    }
-                  }}
+                  key={item.id}
+                  style={styles.lowStockItem}
+                  onPress={() => navigation.navigate('ProductForm', { product: item })}
                 >
-                  <Text style={styles.addStockText}>+10</Text>
+                  <View style={styles.lowStockImage}>
+                    {allImages.length > 0 ? (
+                      <ScrollView
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        {allImages.map((uri, idx) => (
+                          <Image
+                            key={`${item.id}-${idx}`}
+                            source={{ uri }}
+                            style={styles.thumbImage}
+                          />
+                        ))}
+                      </ScrollView>
+                    ) : (
+                      <View style={styles.thumbPlaceholder}>
+                        <Text>📦</Text>
+                      </View>
+                    )}
+                    {allImages.length > 1 && (
+                      <View style={styles.thumbCounter}>
+                        <Text style={styles.thumbCounterText}>{allImages.length}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.lowStockInfo}>
+                    <Text style={styles.lowStockName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.lowStockStock}>
+                      Stock: {item.stock} / Min: {item.min_stock}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.addStockBtn}
+                    onPress={async (e) => {
+                      e.stopPropagation?.();
+                      try {
+                        await api.updateStock(item.id, item.min_stock + 10);
+                        fetchData();
+                      } catch {
+                        Alert.alert('Error', 'No se pudo actualizar el stock');
+                      }
+                    }}
+                  >
+                    <Text style={styles.addStockText}>+10</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -377,10 +404,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     marginRight: 12,
+    position: 'relative',
   },
   thumbImage: {
-    width: '100%',
-    height: '100%',
+    width: 50,
+    height: 50,
   },
   thumbPlaceholder: {
     width: '100%',
@@ -388,6 +416,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#DFE6E9',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  thumbCounter: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  thumbCounterText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
   },
   lowStockInfo: {
     flex: 1,

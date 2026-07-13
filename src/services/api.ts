@@ -1,20 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { Constants } from 'expo-constants';
 
-const getApiUrl = (): string => {
-  if (process.env.API_URL) {
-    return process.env.API_URL;
-  }
-
-  if (process.env.STAGING_API_URL) {
-    return process.env.STAGING_API_URL;
-  }
-
-  return 'http://sistema-funkos.test/api';
-};
-
-const API_URL = getApiUrl();
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://sistema-funkos.test/api';
 
 class ApiService {
   private api: AxiosInstance;
@@ -181,11 +168,7 @@ class ApiService {
       type,
     } as any);
 
-    const response = await this.api.post('/upload/image', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await this.api.post('/upload/image', formData);
 
     return response.data.url;
   }
@@ -206,11 +189,7 @@ class ApiService {
       } as any);
     }
 
-    const response = await this.api.post('/upload/images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await this.api.post('/upload/images', formData);
 
     return response.data.urls;
   }

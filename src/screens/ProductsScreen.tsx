@@ -82,43 +82,65 @@ export function ProductsScreen({ navigation }: any) {
     );
   };
 
-  const renderProduct = ({ item }: { item: Funkomaceta }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => navigation.navigate('ProductForm', { product: item })}
-      onLongPress={() => handleDelete(item)}
-    >
-      <View style={styles.imageContainer}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.productImage} />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text>📦</Text>
-          </View>
-        )}
-        {item.stock === 0 && (
-          <View style={styles.outOfStockBadge}>
-            <Text style={styles.badgeText}>Sin Stock</Text>
-          </View>
-        )}
-        {item.is_featured && (
-          <View style={styles.featuredBadge}>
-            <Text style={styles.badgeText}>⭐</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.productSku}>{item.sku}</Text>
-        <View style={styles.priceStock}>
-          <Text style={styles.productPrice}>${parseFloat(item.price).toFixed(2)}</Text>
-          <Text style={[styles.productStock, item.stock <= item.min_stock && styles.lowStock]}>
-            Stock: {item.stock}
-          </Text>
+  const renderProduct = ({ item }: { item: Funkomaceta }) => {
+    const allImages = [item.image, ...(item.images ?? [])].filter(Boolean) as string[];
+
+    return (
+      <TouchableOpacity
+        style={styles.productCard}
+        onPress={() => navigation.navigate('ProductForm', { product: item })}
+        onLongPress={() => handleDelete(item)}
+      >
+        <View style={styles.imageContainer}>
+          {allImages.length > 0 ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              style={styles.imageScroll}
+            >
+              {allImages.map((uri, index) => (
+                <Image
+                  key={`${item.id}-${index}`}
+                  source={{ uri }}
+                  style={styles.productImage}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text>📦</Text>
+            </View>
+          )}
+          {allImages.length > 1 && (
+            <View style={styles.imageCounter}>
+              <Text style={styles.imageCounterText}>{allImages.length} 📷</Text>
+            </View>
+          )}
+          {item.stock === 0 && (
+            <View style={styles.outOfStockBadge}>
+              <Text style={styles.badgeText}>Sin Stock</Text>
+            </View>
+          )}
+          {item.is_featured && (
+            <View style={styles.featuredBadge}>
+              <Text style={styles.badgeText}>⭐</Text>
+            </View>
+          )}
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+        <View style={styles.productInfo}>
+          <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.productSku}>{item.sku}</Text>
+          <View style={styles.priceStock}>
+            <Text style={styles.productPrice}>${parseFloat(item.price).toFixed(2)}</Text>
+            <Text style={[styles.productStock, item.stock <= item.min_stock && styles.lowStock]}>
+              Stock: {item.stock}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -227,6 +249,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 110,
     backgroundColor: '#DFE6E9',
+    position: 'relative',
+  },
+  imageScroll: {
+    flex: 1,
   },
   productImage: {
     width: '100%',
@@ -237,6 +263,20 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  imageCounter: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  imageCounterText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
   },
   outOfStockBadge: {
     position: 'absolute',
