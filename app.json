@@ -12,6 +12,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Funkomacetas necesita acceso a la camara para tomar fotos de productos",
         "NSPhotoLibraryUsageDescription": "Funkomacetas necesita acceso a la biblioteca de fotos para seleccionar imagenes",
+        "NSPhotoLibraryAddUsageDescription": "Funkomacetas necesita acceso para guardar fotos",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

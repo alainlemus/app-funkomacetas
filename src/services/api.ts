@@ -3,6 +3,9 @@ import * as SecureStore from 'expo-secure-store';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://sistema-funkos.test/api';
 
+console.log('[API] Base URL:', API_URL);
+console.log('[API] Env var EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
+
 class ApiService {
   private api: AxiosInstance;
 
@@ -11,7 +14,6 @@ class ApiService {
       baseURL: API_URL,
       timeout: 30000,
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     });
@@ -134,7 +136,12 @@ class ApiService {
     is_active?: boolean;
     is_featured?: boolean;
   }) {
-    const response = await this.api.post('/products', data);
+    const sanitized = {
+      ...data,
+      image: data.image ? this.toStoragePath(data.image) : undefined,
+      images: data.images?.map((u) => this.toStoragePath(u)),
+    };
+    const response = await this.api.post('/products', sanitized);
     return response.data.data;
   }
 
@@ -153,8 +160,22 @@ class ApiService {
     is_active: boolean;
     is_featured: boolean;
   }>) {
-    const response = await this.api.put(`/products/${id}`, data);
+    const sanitized: any = { ...data };
+    if (data.image !== undefined) {
+      sanitized.image = data.image ? this.toStoragePath(data.image) : null;
+    }
+    if (data.images !== undefined) {
+      sanitized.images = data.images.map((u) => this.toStoragePath(u));
+    }
+    const response = await this.api.put(`/products/${id}`, sanitized);
     return response.data.data;
+  }
+
+  private toStoragePath(url: string): string {
+    if (!url) return url;
+    if (!url.startsWith('http')) return url;
+    const match = url.match(/\/storage\/(.+)$/);
+    return match ? match[1] : url;
   }
 
   async updateStock(id: number, stock: number) {
@@ -173,9 +194,8 @@ class ApiService {
 
   async uploadImage(uri: string): Promise<string> {
     const formData = new FormData();
-    const filename = uri.split('/').pop() || 'image.jpg';
-    const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    const filename = this.normalizeFilename(uri);
+    const type = this.getMimeType(uri);
 
     formData.append('image', {
       uri,
@@ -183,7 +203,12 @@ class ApiService {
       type,
     } as any);
 
-    const response = await this.api.post('/upload/image', formData);
+    const response = await this.api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      transformRequest: (data) => data,
+    });
 
     return response.data.url;
   }
@@ -193,9 +218,8 @@ class ApiService {
 
     for (let i = 0; i < uris.length; i++) {
       const uri = uris[i];
-      const filename = uri.split('/').pop() || `image_${i}.jpg`;
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const filename = this.normalizeFilename(uri, i);
+      const type = this.getMimeType(uri);
 
       formData.append('images[]', {
         uri,
@@ -204,9 +228,32 @@ class ApiService {
       } as any);
     }
 
-    const response = await this.api.post('/upload/images', formData);
+    const response = await this.api.post('/upload/images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      transformRequest: (data) => data,
+    });
 
     return response.data.urls;
+  }
+
+  private normalizeFilename(uri: string, index = 0): string {
+    const raw = uri.split('/').pop() || `image_${Date.now()}_${index}`;
+    const ext = raw.match(/\.(jpe?g|png|gif|webp|heic|heif)$/i)?.[1]?.toLowerCase();
+    const finalExt = ext === 'jpeg' ? 'jpg' : ext || 'jpg';
+    const base = raw.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `${base}.${finalExt}`;
+  }
+
+  private getMimeType(uri: string): string {
+    const lower = uri.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.heic')) return 'image/heic';
+    if (lower.endsWith('.heif')) return 'image/heif';
+    return 'image/jpeg';
   }
 
   async getPublicCatalog() {

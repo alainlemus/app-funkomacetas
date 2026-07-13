@@ -75,8 +75,19 @@ export function ProductFormScreen({ navigation, route }: any) {
           setMainImage(url);
         }
         setImages([...images, url]);
-      } catch {
-        Alert.alert('Error', 'No se pudo subir la imagen');
+      } catch (error: any) {
+        console.log('[UPLOAD ERROR single]', {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          code: error?.code,
+        });
+        const msg =
+          error?.response?.data?.message ||
+          error?.response?.data?.errors?.image?.[0] ||
+          error?.message ||
+          'No se pudo subir la imagen';
+        Alert.alert('Error al subir', `${msg}\n\nStatus: ${error?.response?.status ?? 'N/A'}`);
       } finally {
         setIsLoading(false);
       }
@@ -90,35 +101,39 @@ export function ProductFormScreen({ navigation, route }: any) {
       return;
     }
 
-    let continueTaking = true;
     const newImages: string[] = [];
 
-    while (continueTaking) {
+    const askToContinue = (count: number): Promise<boolean> => {
+      return new Promise((resolve) => {
+        Alert.alert(
+          '¿Tomar otra foto?',
+          `Tienes ${count} foto(s). ¿Deseas tomar otra o terminar?`,
+          [
+            { text: 'Terminar', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Otra foto', onPress: () => resolve(true) },
+          ],
+          { cancelable: false }
+        );
+      });
+    };
+
+    let shouldContinue = true;
+
+    while (shouldContinue) {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        exif: false,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        const uri = result.assets[0].uri;
-        newImages.push(uri);
+      if (result.canceled || !result.assets?.[0]) {
+        break;
       }
 
-      if (result.canceled || newImages.length === 0) {
-        continueTaking = false;
-      } else {
-        Alert.alert(
-          '¿Tomar otra foto?',
-          `Tienes ${newImages.length} foto(s). ¿Deseas tomar otra o terminar?`,
-          [
-            { text: 'Terminar', onPress: () => { continueTaking = false; } },
-            { text: 'Otra foto', onPress: () => { continueTaking = true; } },
-          ]
-        );
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+      newImages.push(result.assets[0].uri);
+      shouldContinue = await askToContinue(newImages.length);
     }
 
     if (newImages.length > 0) {
@@ -129,8 +144,19 @@ export function ProductFormScreen({ navigation, route }: any) {
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
         }
-      } catch {
-        Alert.alert('Error', 'No se pudieron subir las imagenes');
+      } catch (error: any) {
+        console.log('[UPLOAD ERROR]', {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          code: error?.code,
+        });
+        const msg =
+          error?.response?.data?.message ||
+          error?.response?.data?.errors?.images?.[0] ||
+          error?.message ||
+          'No se pudieron subir las imagenes';
+        Alert.alert('Error al subir', `${msg}\n\nStatus: ${error?.response?.status ?? 'N/A'}`);
       } finally {
         setIsLoading(false);
       }
@@ -159,8 +185,19 @@ export function ProductFormScreen({ navigation, route }: any) {
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
         }
-      } catch {
-        Alert.alert('Error', 'No se pudieron subir las imagenes');
+      } catch (error: any) {
+        console.log('[UPLOAD ERROR]', {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          code: error?.code,
+        });
+        const msg =
+          error?.response?.data?.message ||
+          error?.response?.data?.errors?.images?.[0] ||
+          error?.message ||
+          'No se pudieron subir las imagenes';
+        Alert.alert('Error al subir', `${msg}\n\nStatus: ${error?.response?.status ?? 'N/A'}`);
       } finally {
         setIsLoading(false);
       }
