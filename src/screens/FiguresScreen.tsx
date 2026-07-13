@@ -12,6 +12,7 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -150,7 +151,7 @@ export function FiguresScreen({ navigation }: any) {
     >
       <View style={styles.cardContent}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>🎭</Text>
+          <Ionicons name="happy-outline" size={26} color="#6C5CE7" />
         </View>
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{item.name}</Text>
@@ -174,13 +175,17 @@ export function FiguresScreen({ navigation }: any) {
               }
             }}
           >
-            <Text style={styles.actionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+            <Ionicons
+              name={item.is_active ? 'eye-outline' : 'eye-off-outline'}
+              size={18}
+              color="#fff"
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.btnDelete]}
             onPress={() => handleDelete(item)}
           >
-            <Text style={styles.actionIcon}>🗑</Text>
+            <Ionicons name="trash-outline" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -220,7 +225,7 @@ export function FiguresScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🎭</Text>
+            <Ionicons name="happy-outline" size={64} color="#DFE6E9" style={{ marginBottom: 12 }} />
             <Text style={styles.emptyText}>
               {searchQuery ? 'No se encontraron figuras' : 'No hay figuras'}
             </Text>
@@ -229,7 +234,7 @@ export function FiguresScreen({ navigation }: any) {
       />
 
       <TouchableOpacity style={styles.fab} onPress={() => openModal()}>
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -427,7 +432,6 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   emptyIcon: {
-    fontSize: 56,
     marginBottom: 12,
   },
   emptyText: {

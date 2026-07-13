@@ -12,6 +12,7 @@ import {
   TextInput,
   Switch,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -157,13 +158,17 @@ export function CategoriesScreen({ navigation }: any) {
               }
             }}
           >
-            <Text style={styles.actionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+            <Ionicons
+              name={item.is_active ? 'eye-outline' : 'eye-off-outline'}
+              size={18}
+              color="#fff"
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.btnDelete]}
             onPress={() => handleDelete(item)}
           >
-            <Text style={styles.actionIcon}>🗑</Text>
+            <Ionicons name="trash-outline" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -203,7 +208,7 @@ export function CategoriesScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🏷️</Text>
+            <Ionicons name="pricetag-outline" size={64} color="#DFE6E9" style={{ marginBottom: 12 }} />
             <Text style={styles.emptyText}>
               {searchQuery ? 'No se encontraron categorias' : 'No hay categorias'}
             </Text>
@@ -212,7 +217,7 @@ export function CategoriesScreen({ navigation }: any) {
       />
 
       <TouchableOpacity style={styles.fab} onPress={() => openModal()}>
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -399,7 +404,6 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   emptyIcon: {
-    fontSize: 56,
     marginBottom: 12,
   },
   emptyText: {

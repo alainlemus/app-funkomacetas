@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -11,37 +12,44 @@ import { ProductFormScreen } from '../screens/ProductFormScreen';
 import { CategoriesScreen } from '../screens/CategoriesScreen';
 import { FiguresScreen } from '../screens/FiguresScreen';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+const TAB_ICONS: Record<string, { active: any; inactive: any }> = {
+  Dashboard: { active: 'home', inactive: 'home-outline' },
+  Productos: { active: 'archive', inactive: 'archive-outline' },
+  Categorias: { active: 'pricetag', inactive: 'pricetag-outline' },
+  Figuras: { active: 'happy', inactive: 'happy-outline' },
+};
+
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Dashboard: '🏠',
-    Productos: '📦',
-    Categorias: '🏷️',
-    Figuras: '🎭',
-  };
+  const iconSet = TAB_ICONS[name];
+  const iconName = focused ? iconSet.active : iconSet.inactive;
   return (
-    <View style={styles.tabIcon}>
-      <Text style={[styles.tabIconText, focused && styles.tabIconFocused]}>{icons[name]}</Text>
-    </View>
+    <Ionicons
+      name={iconName}
+      size={24}
+      color={focused ? '#6C5CE7' : '#95A5A6'}
+    />
   );
 }
 
 function MainTabs() {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
-        tabBarActiveTintColor: '#6C5CE7',
-        tabBarInactiveTintColor: '#636E72',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface,
           borderTopWidth: 1,
-          borderTopColor: '#DFE6E9',
+          borderTopColor: colors.border,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 8),
           height: 60 + Math.max(insets.bottom, 8),
@@ -63,10 +71,11 @@ function MainTabs() {
 }
 
 function AdminStack() {
+  const { colors } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#6C5CE7' },
+        headerStyle: { backgroundColor: colors.headerBg },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: '600' },
         headerBackTitle: 'Regresar',
@@ -102,6 +111,7 @@ function AppNavigatorContent() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
+        <Ionicons name="flower-outline" size={64} color="#fff" style={{ marginBottom: 12 }} />
         <Text style={styles.loadingText}>Funkomacetas</Text>
       </View>
     );
@@ -117,7 +127,9 @@ function AppNavigatorContent() {
 export function AppNavigator() {
   return (
     <SafeAreaProvider>
-      <AppNavigatorContent />
+      <ThemeProvider>
+        <AppNavigatorContent />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
@@ -133,16 +145,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-  },
-  tabIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIconText: {
-    fontSize: 22,
-    opacity: 0.6,
-  },
-  tabIconFocused: {
-    opacity: 1,
   },
 });

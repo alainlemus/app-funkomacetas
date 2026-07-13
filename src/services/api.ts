@@ -192,6 +192,16 @@ class ApiService {
     return response.data.data;
   }
 
+  async recordSale(id: number, quantity: number = 1) {
+    const response = await this.api.post(`/products/${id}/sale`, { quantity });
+    return response.data.data;
+  }
+
+  async getTopSelling(limit: number = 5) {
+    const response = await this.api.get('/products/top-selling', { params: { limit } });
+    return response.data.data;
+  }
+
   async uploadImage(uri: string): Promise<string> {
     const formData = new FormData();
     const filename = this.normalizeFilename(uri);

@@ -10,7 +10,9 @@ import {
   Image,
   RefreshControl,
   TextInput,
+  ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Funkomaceta } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +23,7 @@ export function ProductsScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [cardWidth, setCardWidth] = useState(180);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', fetchProducts);
@@ -90,7 +93,10 @@ export function ProductsScreen({ navigation }: any) {
         <TouchableOpacity
           onPress={() => navigation.navigate('ProductForm', { product: item })}
         >
-          <View style={styles.imageContainer}>
+          <View
+            style={styles.imageContainer}
+            onLayout={(e) => setCardWidth(e.nativeEvent.layout.width)}
+          >
             {allImages.length > 0 ? (
               <ScrollView
                 horizontal
@@ -102,18 +108,19 @@ export function ProductsScreen({ navigation }: any) {
                   <Image
                     key={`${item.id}-${index}`}
                     source={{ uri }}
-                    style={styles.productImage}
+                    style={[styles.productImage, { width: cardWidth }]}
                   />
                 ))}
               </ScrollView>
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Text>📦</Text>
+                <Ionicons name="cube-outline" size={32} color="#B2BEC3" />
               </View>
             )}
             {allImages.length > 1 && (
               <View style={styles.imageCounter}>
-                <Text style={styles.imageCounterText}>{allImages.length} 📷</Text>
+                <Ionicons name="camera" size={11} color="#fff" />
+                <Text style={styles.imageCounterText}>{allImages.length}</Text>
               </View>
             )}
             {item.stock === 0 && (
@@ -123,11 +130,12 @@ export function ProductsScreen({ navigation }: any) {
             )}
             {item.is_featured && (
               <View style={styles.featuredBadge}>
-                <Text style={styles.badgeText}>⭐</Text>
+                <Ionicons name="star" size={14} color="#fff" />
               </View>
             )}
             {!item.is_active && (
               <View style={styles.hiddenOverlay}>
+                <Ionicons name="eye-off" size={18} color="#fff" />
                 <Text style={styles.hiddenOverlayText}>OCULTO</Text>
               </View>
             )}
@@ -155,13 +163,17 @@ export function ProductsScreen({ navigation }: any) {
               }
             }}
           >
-            <Text style={styles.productActionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+            <Ionicons
+              name={item.is_active ? 'eye-outline' : 'eye-off-outline'}
+              size={16}
+              color="#fff"
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.productActionBtn, styles.btnDelete]}
             onPress={() => handleDelete(item)}
           >
-            <Text style={styles.productActionIcon}>🗑</Text>
+            <Ionicons name="trash-outline" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -201,7 +213,7 @@ export function ProductsScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>📦</Text>
+            <Ionicons name="archive-outline" size={64} color="#DFE6E9" style={{ marginBottom: 12 }} />
             <Text style={styles.emptyText}>
               {searchQuery ? 'No se encontraron productos' : 'No hay productos'}
             </Text>
@@ -212,7 +224,7 @@ export function ProductsScreen({ navigation }: any) {
         style={styles.fab}
         onPress={() => navigation.navigate('ProductForm', { product: null })}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
     </SafeAreaView>
     </View>
@@ -414,7 +426,6 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   emptyIcon: {
-    fontSize: 56,
     marginBottom: 12,
   },
   emptyText: {
@@ -441,5 +452,17 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#fff',
     fontWeight: '300',
+  },
+  imageCounter: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
 });

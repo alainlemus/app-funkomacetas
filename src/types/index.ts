@@ -40,6 +40,7 @@ export interface Funkomaceta {
   images: string[] | null;
   is_active: boolean;
   is_featured: boolean;
+  sales_count: number;
   category_id: number | null;
   figure_id: number | null;
   category?: Category;

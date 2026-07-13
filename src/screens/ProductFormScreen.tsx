@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '../services/api';
 import { Funkomaceta, Category, Figure } from '../types';
@@ -140,9 +141,11 @@ export function ProductFormScreen({ navigation, route }: any) {
       setIsLoading(true);
       try {
         const urls = await api.uploadImages(newImages);
-        setImages([...images, ...urls]);
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
+          setImages([...images, ...urls.slice(1)]);
+        } else {
+          setImages([...images, ...urls]);
         }
       } catch (error: any) {
         console.log('[UPLOAD ERROR]', {
@@ -181,9 +184,11 @@ export function ProductFormScreen({ navigation, route }: any) {
       setIsLoading(true);
       try {
         const urls = await api.uploadImages(uris);
-        setImages([...images, ...urls]);
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
+          setImages([...images, ...urls.slice(1)]);
+        } else {
+          setImages([...images, ...urls]);
         }
       } catch (error: any) {
         console.log('[UPLOAD ERROR]', {
@@ -358,30 +363,59 @@ export function ProductFormScreen({ navigation, route }: any) {
 
             <Text style={styles.label}>Imagenes</Text>
             <View style={styles.imagesSection}>
+              {mainImage ? (
+                <View style={styles.mainImageWrapper}>
+                  <Text style={styles.sectionLabel}>Imagen principal</Text>
+                  <View style={styles.mainImageContainer}>
+                    <Image source={{ uri: mainImage }} style={styles.mainImage} />
+                    <View style={styles.mainBadge}><Text style={styles.mainBadgeText}>Principal</Text></View>
+                    <TouchableOpacity style={styles.removeBtn} onPress={() => setMainImage('')}>
+                      <Ionicons name="close" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
+
               {images.length > 0 && (
-                <ScrollView horizontal style={styles.imageList} showsHorizontalScrollIndicator={false}>
-                  {images.map((img, index) => (
-                    <View key={index} style={styles.imageItem}>
-                      <Image source={{ uri: img }} style={styles.thumbnail} />
-                      {img === mainImage && <View style={styles.mainBadge}><Text style={styles.mainBadgeText}>Principal</Text></View>}
-                      <TouchableOpacity style={styles.removeBtn} onPress={() => removeImage(index)}>
-                        <Text style={styles.removeBtnText}>×</Text>
-                      </TouchableOpacity>
-                      {img !== mainImage && (
-                        <TouchableOpacity style={styles.setMainBtn} onPress={() => setAsMain(img)}>
-                          <Text style={styles.setMainBtnText}>Principal</Text>
+                <View style={styles.galleryWrapper}>
+                  <Text style={styles.sectionLabel}>Galería ({images.length})</Text>
+                  <ScrollView horizontal style={styles.imageList} showsHorizontalScrollIndicator={false}>
+                    {images.map((img, index) => (
+                      <View key={`${img}-${index}`} style={styles.imageItem}>
+                        <Image source={{ uri: img }} style={styles.thumbnail} />
+                        {img !== mainImage && (
+                          <TouchableOpacity style={styles.setMainBtn} onPress={() => setAsMain(img)}>
+                            <Text style={styles.setMainBtnText}>Hacer principal</Text>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity style={styles.removeBtn} onPress={() => removeImage(index)}>
+                          <Ionicons name="close" size={20} color="#fff" />
                         </TouchableOpacity>
-                      )}
-                    </View>
-                  ))}
-                </ScrollView>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
               <View style={styles.imageButtons}>
                 <TouchableOpacity style={styles.imageBtn} onPress={takeMultiplePhotos} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>📷 Tomar fotos</Text>}
+                  {isLoading ? (
+                    <ActivityIndicator color="#6C5CE7" />
+                  ) : (
+                    <>
+                      <Ionicons name="camera-outline" size={18} color="#6C5CE7" />
+                      <Text style={styles.imageBtnText}>Tomar fotos</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageBtn} onPress={pickMultipleImages} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>🖼️ Galeria</Text>}
+                  {isLoading ? (
+                    <ActivityIndicator color="#6C5CE7" />
+                  ) : (
+                    <>
+                      <Ionicons name="image-outline" size={18} color="#6C5CE7" />
+                      <Text style={styles.imageBtnText}>Galeria</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -475,8 +509,35 @@ const styles = StyleSheet.create({
   imagesSection: {
     marginTop: 8,
   },
-  imageList: {
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#636E72',
+    marginBottom: 6,
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  mainImageWrapper: {
     marginBottom: 12,
+  },
+  mainImageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#F1F3F5',
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+  },
+  galleryWrapper: {
+    marginBottom: 12,
+  },
+  imageList: {
+    marginBottom: 8,
   },
   imageItem: {
     marginRight: 12,
@@ -504,19 +565,20 @@ const styles = StyleSheet.create({
   },
   removeBtn: {
     position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#E17055',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  removeBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
+    zIndex: 10,
   },
   setMainBtn: {
     position: 'absolute',
@@ -538,18 +600,22 @@ const styles = StyleSheet.create({
   },
   imageBtn: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 10,
+    flexDirection: 'row',
+    backgroundColor: '#F8F7FF',
+    borderRadius: 10,
+    paddingVertical: 12,
     paddingHorizontal: 4,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#6C5CE7',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: '#A29BFE',
     borderStyle: 'dashed',
   },
   imageBtnText: {
     color: '#6C5CE7',
     fontWeight: '600',
+    fontSize: 13,
   },
   saveBtn: {
     backgroundColor: '#6C5CE7',
