@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightTheme, darkTheme, ThemeColors, ThemeMode } from './colors';
 
 interface ThemeContextValue {
@@ -13,28 +12,18 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const STORAGE_KEY = '@funkomacetas/theme';
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
-  const [mode, setModeState] = useState<ThemeMode>(systemScheme === 'dark' ? 'dark' : 'light');
-
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((saved) => {
-      if (saved === 'light' || saved === 'dark') {
-        setModeState(saved);
-      }
-    });
-  }, []);
+  const [mode, setModeState] = useState<ThemeMode>(
+    systemScheme === 'dark' ? 'dark' : 'light'
+  );
 
   const setMode = (newMode: ThemeMode) => {
     setModeState(newMode);
-    AsyncStorage.setItem(STORAGE_KEY, newMode);
   };
 
   const toggleTheme = () => {
-    const next = mode === 'light' ? 'dark' : 'light';
-    setMode(next);
+    setModeState((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
   const colors = mode === 'dark' ? darkTheme : lightTheme;
