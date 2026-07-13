@@ -16,8 +16,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../theme/ThemeContext';
+import { Skeleton, SkeletonCard } from '../components/Skeleton';
 
 export function FiguresScreen({ navigation }: any) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [figures, setFigures] = useState<Figure[]>([]);
   const [filteredFigures, setFilteredFigures] = useState<Figure[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -194,18 +198,29 @@ export function FiguresScreen({ navigation }: any) {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+          <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+            <Skeleton width={150} height={22} style={{ marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.3)' }} />
+            <Skeleton width="100%" height={42} borderRadius={10} style={{ backgroundColor: 'rgba(255,255,255,0.85)' }} />
+          </View>
+          <View style={styles.listContent}>
+            <SkeletonCard height={70} />
+            <SkeletonCard height={70} />
+            <SkeletonCard height={70} />
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerBg} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Figuras</Text>
+        <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>Figuras</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar figura..."
@@ -250,6 +265,7 @@ export function FiguresScreen({ navigation }: any) {
               value={name}
               onChangeText={setName}
               placeholder="Nombre de la figura"
+              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>SKU</Text>
@@ -259,6 +275,7 @@ export function FiguresScreen({ navigation }: any) {
               onChangeText={setSku}
               placeholder="SKU-001"
               autoCapitalize="characters"
+              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>Descripcion</Text>
@@ -267,6 +284,7 @@ export function FiguresScreen({ navigation }: any) {
               value={description}
               onChangeText={setDescription}
               placeholder="Descripcion (opcional)"
+              placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={3}
             />
@@ -307,10 +325,9 @@ export function FiguresScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
     position: 'relative',
   },
   safeArea: {
@@ -318,7 +335,6 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
   },
   centered: {
     flex: 1,
@@ -329,12 +345,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
-    backgroundColor: '#6C5CE7',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#fff',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 12,
   },
   searchInput: {
@@ -349,7 +370,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     marginBottom: 8,
     shadowColor: '#000',
@@ -407,22 +428,22 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#2D3436',
+    color: colors.text,
   },
   cardSku: {
     fontSize: 12,
-    color: '#6C5CE7',
+    color: colors.primary,
     fontWeight: '500',
     marginTop: 2,
   },
   cardDesc: {
     fontSize: 12,
-    color: '#636E72',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   cardCount: {
     fontSize: 11,
-    color: '#B2BEC3',
+    color: colors.textMuted,
     marginTop: 4,
   },
   empty: {
@@ -436,7 +457,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#636E72',
+    color: colors.textSecondary,
   },
   fab: {
     position: 'absolute',
@@ -445,7 +466,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -466,31 +487,32 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2D3436',
+    color: colors.text,
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2D3436',
+    color: colors.text,
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.inputBg,
+    color: colors.text,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   textArea: {
     height: 80,

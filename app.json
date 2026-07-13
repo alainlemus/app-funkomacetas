@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "El Jardín de las Macetas",
-    "slug": "app-funkos",
+    "slug": "sistema-funkos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -13,7 +13,23 @@
         "NSCameraUsageDescription": "Funkomacetas necesita acceso a la camara para tomar fotos de productos",
         "NSPhotoLibraryUsageDescription": "Funkomacetas necesita acceso a la biblioteca de fotos para seleccionar imagenes",
         "NSPhotoLibraryAddUsageDescription": "Funkomacetas necesita acceso para guardar fotos",
-        "ITSAppUsesNonExemptEncryption": false
+        "NSFaceIDUsageDescription": "Funkomacetas usa Face ID para iniciar sesion rapidamente",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSExceptionDomains": {
+            "sslip.io": {
+              "NSIncludesSubdomains": true,
+              "NSExceptionAllowsInsecureHTTPLoads": false,
+              "NSExceptionRequiresForwardSecrecy": false,
+              "NSExceptionMinimumTLSVersion": "TLSv1.0"
+            },
+            "eljardindelasmacetas.com": {
+              "NSIncludesSubdomains": true,
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSExceptionRequiresForwardSecrecy": false
+            }
+          }
+        }
       }
     },
     "android": {
@@ -43,7 +59,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "1e0910ac-a54c-4f41-9762-763ce701cfa9"
+        "projectId": "50b96d4e-d33b-4c61-90fd-f082230c9fe3"
       }
     },
     "owner": "alainlemus",
@@ -51,7 +67,7 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/1e0910ac-a54c-4f41-9762-763ce701cfa9"
+      "url": "https://u.expo.dev/50b96d4e-d33b-4c61-90fd-f082230c9fe3"
     }
   }
 }

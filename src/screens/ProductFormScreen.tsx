@@ -18,10 +18,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { api } from '../services/api';
 import { Funkomaceta, Category, Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../theme/ThemeContext';
 
 export function ProductFormScreen({ navigation, route }: any) {
   const product = route.params?.product;
   const isEditing = !!product;
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [name, setName] = useState(product?.name || '');
   const [sku, setSku] = useState(product?.sku || '');
@@ -268,7 +271,7 @@ export function ProductFormScreen({ navigation, route }: any) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -276,30 +279,30 @@ export function ProductFormScreen({ navigation, route }: any) {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.form}>
             <Text style={styles.label}>Nombre *</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre del producto" />
+            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre del producto" placeholderTextColor={colors.textMuted} />
 
             <Text style={styles.label}>SKU *</Text>
-            <TextInput style={styles.input} value={sku} onChangeText={setSku} placeholder="SKU-001" autoCapitalize="characters" />
+            <TextInput style={styles.input} value={sku} onChangeText={setSku} placeholder="SKU-001" autoCapitalize="characters" placeholderTextColor={colors.textMuted} />
 
             <View style={styles.row}>
               <View style={styles.half}>
                 <Text style={styles.label}>Precio *</Text>
-                <TextInput style={styles.input} value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" />
+                <TextInput style={styles.input} value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" placeholderTextColor={colors.textMuted} />
               </View>
               <View style={styles.half}>
                 <Text style={styles.label}>Costo</Text>
-                <TextInput style={styles.input} value={cost} onChangeText={setCost} placeholder="0.00" keyboardType="decimal-pad" />
+                <TextInput style={styles.input} value={cost} onChangeText={setCost} placeholder="0.00" keyboardType="decimal-pad" placeholderTextColor={colors.textMuted} />
               </View>
             </View>
 
             <View style={styles.row}>
               <View style={styles.half}>
                 <Text style={styles.label}>Stock</Text>
-                <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder="0" keyboardType="number-pad" />
+                <TextInput style={styles.input} value={stock} onChangeText={setStock} placeholder="0" keyboardType="number-pad" placeholderTextColor={colors.textMuted} />
               </View>
               <View style={styles.half}>
                 <Text style={styles.label}>Stock Minimo</Text>
-                <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder="5" keyboardType="number-pad" />
+                <TextInput style={styles.input} value={minStock} onChangeText={setMinStock} placeholder="5" keyboardType="number-pad" placeholderTextColor={colors.textMuted} />
               </View>
             </View>
 
@@ -309,6 +312,7 @@ export function ProductFormScreen({ navigation, route }: any) {
               value={description}
               onChangeText={setDescription}
               placeholder="Descripcion del producto"
+              placeholderTextColor={colors.textMuted}
               multiline
               numberOfLines={3}
             />
@@ -438,10 +442,9 @@ export function ProductFormScreen({ navigation, route }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   scrollView: {
     flex: 1,
@@ -452,19 +455,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2D3436',
+    color: colors.text,
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.inputBg,
+    color: colors.text,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
-  },
+    borderColor: colors.border,
+  } as any,
   textArea: {
     height: 80,
     textAlignVertical: 'top',
@@ -485,17 +489,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   chipSelected: {
-    backgroundColor: '#6C5CE7',
-    borderColor: '#6C5CE7',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   chipText: {
     fontSize: 13,
-    color: '#636E72',
+    color: colors.textSecondary,
   },
   chipTextSelected: {
     color: '#fff',
@@ -512,7 +516,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#636E72',
+    color: colors.textSecondary,
     marginBottom: 6,
     marginTop: 4,
     textTransform: 'uppercase',
@@ -527,7 +531,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#F1F3F5',
+    backgroundColor: colors.surfaceAlt,
   },
   mainImage: {
     width: '100%',
@@ -553,7 +557,7 @@ const styles = StyleSheet.create({
     bottom: 4,
     left: 4,
     right: 4,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     borderRadius: 4,
     paddingVertical: 2,
     alignItems: 'center',
@@ -570,7 +574,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E17055',
+    backgroundColor: colors.danger,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -601,7 +605,7 @@ const styles = StyleSheet.create({
   imageBtn: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#F8F7FF',
+    backgroundColor: colors.surfaceAlt,
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 4,
@@ -609,16 +613,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     borderWidth: 1.5,
-    borderColor: '#A29BFE',
+    borderColor: colors.primaryLight,
     borderStyle: 'dashed',
   },
   imageBtnText: {
-    color: '#6C5CE7',
+    color: colors.primary,
     fontWeight: '600',
     fontSize: 13,
   },
   saveBtn: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,11 @@ import {
   RefreshControl,
   Modal,
   TextInput,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { Skeleton, SkeletonStatCard, SkeletonTableRow } from '../components/Skeleton';
-import { useStaggerFadeIn } from '../hooks/useFadeIn';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -129,6 +129,24 @@ export function DashboardScreen({ navigation }: any) {
   navigation: any;
   onRefresh: () => void;
   showAddStock: boolean;
+}
+
+function StatCardAnimated({ index, children }: { index: number; children: React.ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(15)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 400, delay: index * 70, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 400, delay: index * 70, useNativeDriver: true }),
+    ]).start();
+  }, [index, opacity, translateY]);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
 }
 
 function StockTable({ title, subtitle, iconName, items, theme, navigation, onRefresh, showAddStock }: StockTableProps) {
@@ -320,49 +338,69 @@ const handleLogout = () => {
           }
         >
           <View style={styles.statsGrid}>
-            <TouchableOpacity
-              style={[styles.statCard, styles.primaryCard]}
-              onPress={() => navigation.navigate('Productos')}
-            >
-              <View style={styles.statIconWrap}>
-                <Ionicons name="archive-outline" size={28} color="#fff" />
-              </View>
-              <Text style={styles.statValue}>{stats?.totalProducts || 0}</Text>
-              <Text style={styles.statLabel}>Productos</Text>
-            </TouchableOpacity>
+            <StatCardAnimated index={0}>
+              <TouchableOpacity
+                style={[styles.statCard, styles.primaryCard]}
+                onPress={() => navigation.navigate('Productos')}
+              >
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="archive-outline" size={26} color="#fff" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={styles.statValue}>{stats?.totalProducts || 0}</Text>
+                  <Text style={styles.statLabel}>Productos</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" style={styles.statChevron} />
+              </TouchableOpacity>
+            </StatCardAnimated>
 
-            <TouchableOpacity
-              style={[styles.statCard, styles.warningCard]}
-              onPress={() => navigation.navigate('Productos')}
-            >
-              <View style={styles.statIconWrap}>
-                <Ionicons name="warning-outline" size={28} color="#fff" />
-              </View>
-              <Text style={styles.statValue}>{stats?.lowStock || 0}</Text>
-              <Text style={styles.statLabel}>Stock Bajo</Text>
-            </TouchableOpacity>
+            <StatCardAnimated index={1}>
+              <TouchableOpacity
+                style={[styles.statCard, styles.warningCard]}
+                onPress={() => navigation.navigate('Productos')}
+              >
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="warning-outline" size={26} color="#fff" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={styles.statValue}>{stats?.lowStock || 0}</Text>
+                  <Text style={styles.statLabel}>Stock Bajo</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" style={styles.statChevron} />
+              </TouchableOpacity>
+            </StatCardAnimated>
 
-            <TouchableOpacity
-              style={[styles.statCard, styles.dangerCard]}
-              onPress={() => navigation.navigate('Productos')}
-            >
-              <View style={styles.statIconWrap}>
-                <Ionicons name="close-circle-outline" size={28} color="#fff" />
-              </View>
-              <Text style={styles.statValue}>{stats?.outOfStock || 0}</Text>
-              <Text style={styles.statLabel}>Sin Stock</Text>
-            </TouchableOpacity>
+            <StatCardAnimated index={2}>
+              <TouchableOpacity
+                style={[styles.statCard, styles.dangerCard]}
+                onPress={() => navigation.navigate('Productos')}
+              >
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="close-circle-outline" size={26} color="#fff" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={styles.statValue}>{stats?.outOfStock || 0}</Text>
+                  <Text style={styles.statLabel}>Sin Stock</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" style={styles.statChevron} />
+              </TouchableOpacity>
+            </StatCardAnimated>
 
-            <TouchableOpacity
-              style={[styles.statCard, styles.secondaryCard]}
-              onPress={() => navigation.navigate('Categorias')}
-            >
-              <View style={styles.statIconWrap}>
-                <Ionicons name="pricetag-outline" size={28} color="#fff" />
-              </View>
-              <Text style={styles.statValue}>{stats?.totalCategories || 0}</Text>
-              <Text style={styles.statLabel}>Categorias</Text>
-            </TouchableOpacity>
+            <StatCardAnimated index={3}>
+              <TouchableOpacity
+                style={[styles.statCard, styles.secondaryCard]}
+                onPress={() => navigation.navigate('Categorias')}
+              >
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="pricetag-outline" size={26} color="#fff" />
+                </View>
+                <View style={styles.statContent}>
+                  <Text style={styles.statValue}>{stats?.totalCategories || 0}</Text>
+                  <Text style={styles.statLabel}>Categorias</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" style={styles.statChevron} />
+              </TouchableOpacity>
+            </StatCardAnimated>
           </View>
 
         <View style={[styles.valueCard, { backgroundColor: colors.surface }]}>
@@ -654,14 +692,12 @@ const handleLogout = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
   safeArea: {
     flex: 1,
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
   },
   centered: {
     flex: 1,
@@ -686,6 +722,81 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  tableCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderTopWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tableRowHeader: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F8F9FA',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  tableHeaderCell: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#636E72',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  tableRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F3F5',
+  },
+  tableCellProduct: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  tableThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#DFE6E9',
+  },
+  tableThumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+  tableThumbPlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tableProductInfo: {
+    flex: 1,
+  },
+  tableProductName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2D3436',
+  },
+  tableProductSku: {
+    fontSize: 10,
+    color: '#95A5A6',
+    marginTop: 1,
+  },
   logoutButton: {
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -700,16 +811,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     padding: 12,
-    gap: 12,
+    gap: 10,
   },
   statCard: {
-    width: '47%',
-    borderRadius: 16,
-    padding: 16,
+    width: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 14,
+    padding: 16,
+    paddingVertical: 18,
   },
   primaryCard: {
     backgroundColor: '#6C5CE7',
@@ -728,23 +840,32 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   statIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+  },
+  statContent: {
+    flex: 1,
+    marginLeft: 14,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#fff',
+    lineHeight: 32,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'rgba(255,255,255,0.9)',
-    marginTop: 4,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  statChevron: {
+    marginLeft: 8,
+    opacity: 0.7,
   },
   valueCard: {
     marginHorizontal: 12,
@@ -771,12 +892,6 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 20,
     paddingHorizontal: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2D3436',
-    marginBottom: 12,
   },
   lowStockItem: {
     backgroundColor: '#fff',

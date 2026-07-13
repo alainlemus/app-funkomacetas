@@ -7,7 +7,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://sistema-funkos.test/api"
+        "EXPO_PUBLIC_API_URL": "https://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api"
       }
     },
     "local": {

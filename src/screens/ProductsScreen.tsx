@@ -16,8 +16,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { Funkomaceta } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../theme/ThemeContext';
+import { Skeleton, SkeletonCard } from '../components/Skeleton';
 
 export function ProductsScreen({ navigation }: any) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [products, setProducts] = useState<Funkomaceta[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Funkomaceta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,18 +186,42 @@ export function ProductsScreen({ navigation }: any) {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+          <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+            <Skeleton width={150} height={22} style={{ marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.3)' }} />
+            <Skeleton width="100%" height={42} borderRadius={10} style={{ backgroundColor: 'rgba(255,255,255,0.85)' }} />
+          </View>
+          <View style={styles.listContent}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={{ flex: 1 }}>
+                <SkeletonCard />
+              </View>
+              <View style={{ flex: 1 }}>
+                <SkeletonCard />
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              <View style={{ flex: 1 }}>
+                <SkeletonCard />
+              </View>
+              <View style={{ flex: 1 }}>
+                <SkeletonCard />
+              </View>
+            </View>
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerBg} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.headerBg, { backgroundColor: colors.headerBg }]} />
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Productos</Text>
+        <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
+          <Text style={[styles.headerTitle, { color: '#fff' }]}>Productos</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar producto..."
@@ -231,10 +259,9 @@ export function ProductsScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ReturnType<typeof useTheme>['colors']) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
     position: 'relative',
   },
   safeArea: {
@@ -242,7 +269,6 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
   },
   centered: {
     flex: 1,
@@ -253,12 +279,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
-    backgroundColor: '#6C5CE7',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#fff',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 12,
   },
   searchInput: {
@@ -274,7 +305,7 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     margin: 4,
     overflow: 'hidden',
@@ -394,11 +425,11 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#2D3436',
+    color: colors.text,
   },
   productSku: {
     fontSize: 10,
-    color: '#636E72',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   priceStock: {
@@ -410,11 +441,11 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#6C5CE7',
+    color: colors.primary,
   },
   productStock: {
     fontSize: 11,
-    color: '#00B894',
+    color: colors.success,
   },
   lowStock: {
     color: '#E17055',
@@ -430,7 +461,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#636E72',
+    color: colors.textSecondary,
   },
   fab: {
     position: 'absolute',
@@ -439,7 +470,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
