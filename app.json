@@ -29,7 +29,8 @@
               "NSExceptionRequiresForwardSecrecy": false
             }
           }
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
