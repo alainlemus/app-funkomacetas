@@ -80,6 +80,11 @@ class ApiService {
     await this.api.delete(`/categories/${id}`);
   }
 
+  async toggleCategoryActive(id: number) {
+    const response = await this.api.patch(`/categories/${id}/toggle-active`);
+    return response.data.data;
+  }
+
   async getFigures() {
     const response = await this.api.get('/figures');
     return response.data.data;
@@ -97,6 +102,11 @@ class ApiService {
 
   async deleteFigure(id: number) {
     await this.api.delete(`/figures/${id}`);
+  }
+
+  async toggleFigureActive(id: number) {
+    const response = await this.api.patch(`/figures/${id}/toggle-active`);
+    return response.data.data;
   }
 
   async getProducts(params?: { category_id?: number; featured?: boolean; in_stock?: boolean }) {
@@ -154,6 +164,11 @@ class ApiService {
 
   async deleteProduct(id: number) {
     await this.api.delete(`/products/${id}`);
+  }
+
+  async toggleProductActive(id: number) {
+    const response = await this.api.patch(`/products/${id}/toggle-active`);
+    return response.data.data;
   }
 
   async uploadImage(uri: string): Promise<string> {

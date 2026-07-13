@@ -20,11 +20,10 @@ export interface Figure {
   id: number;
   name: string;
   slug: string;
-  sku: string;
   description: string | null;
+  sku: string;
+  is_active: boolean;
   funkomacetas_count?: number;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Funkomaceta {

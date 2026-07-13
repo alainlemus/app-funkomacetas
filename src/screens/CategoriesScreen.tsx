@@ -132,9 +132,8 @@ export function CategoriesScreen({ navigation }: any) {
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, !item.is_active && styles.cardInactive]}
       onPress={() => openModal(item)}
-      onLongPress={() => handleDelete(item)}
     >
       <View style={styles.cardContent}>
         <View style={styles.cardInfo}>
@@ -146,8 +145,26 @@ export function CategoriesScreen({ navigation }: any) {
             {item.funkomacetas_count || 0} productos
           </Text>
         </View>
-        <View style={[styles.statusBadge, item.is_active ? styles.activeBadge : styles.inactiveBadge]}>
-          <Text style={styles.statusText}>{item.is_active ? 'Activo' : 'Inactivo'}</Text>
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, item.is_active ? styles.btnVisible : styles.btnHidden]}
+            onPress={async () => {
+              try {
+                await api.toggleCategoryActive(item.id);
+                fetchCategories();
+              } catch {
+                Alert.alert('Error', 'No se pudo cambiar la visibilidad');
+              }
+            }}
+          >
+            <Text style={styles.actionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.btnDelete]}
+            onPress={() => handleDelete(item)}
+          >
+            <Text style={styles.actionIcon}>🗑</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -310,10 +327,36 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  cardInactive: {
+    opacity: 0.6,
+  },
   cardContent: {
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  actionBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnVisible: {
+    backgroundColor: '#00B894',
+  },
+  btnHidden: {
+    backgroundColor: '#636E72',
+  },
+  btnDelete: {
+    backgroundColor: '#E17055',
+  },
+  actionIcon: {
+    fontSize: 16,
   },
   cardInfo: {
     flex: 1,

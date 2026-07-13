@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Modal,
   TextInput,
+  Switch,
 } from 'react-native';
 import { api } from '../services/api';
 import { Figure } from '../types';
@@ -25,6 +26,7 @@ export function FiguresScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [description, setDescription] = useState('');
+  const [isActive, setIsActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -72,11 +74,13 @@ export function FiguresScreen({ navigation }: any) {
       setName(figure.name);
       setSku(figure.sku);
       setDescription(figure.description || '');
+      setIsActive(figure.is_active);
     } else {
       setEditingFigure(null);
       setName('');
       setSku('');
       setDescription('');
+      setIsActive(true);
     }
     setModalVisible(true);
   };
@@ -98,12 +102,14 @@ export function FiguresScreen({ navigation }: any) {
           name: name.trim(),
           sku: sku.trim(),
           description: description.trim() || undefined,
+          is_active: isActive,
         });
       } else {
         await api.createFigure({
           name: name.trim(),
           sku: sku.trim(),
           description: description.trim() || undefined,
+          is_active: isActive,
         });
       }
       setModalVisible(false);
@@ -139,9 +145,8 @@ export function FiguresScreen({ navigation }: any) {
 
   const renderFigure = ({ item }: { item: Figure }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, !item.is_active && styles.cardInactive]}
       onPress={() => openModal(item)}
-      onLongPress={() => handleDelete(item)}
     >
       <View style={styles.cardContent}>
         <View style={styles.iconContainer}>
@@ -156,6 +161,27 @@ export function FiguresScreen({ navigation }: any) {
           <Text style={styles.cardCount}>
             {item.funkomacetas_count || 0} productos
           </Text>
+        </View>
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, item.is_active ? styles.btnVisible : styles.btnHidden]}
+            onPress={async () => {
+              try {
+                await api.toggleFigureActive(item.id);
+                fetchFigures();
+              } catch {
+                Alert.alert('Error', 'No se pudo cambiar la visibilidad');
+              }
+            }}
+          >
+            <Text style={styles.actionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.btnDelete]}
+            onPress={() => handleDelete(item)}
+          >
+            <Text style={styles.actionIcon}>🗑</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -240,6 +266,15 @@ export function FiguresScreen({ navigation }: any) {
               numberOfLines={3}
             />
 
+            <View style={styles.switchRow}>
+              <Text style={styles.label}>Activa</Text>
+              <Switch
+                value={isActive}
+                onValueChange={setIsActive}
+                trackColor={{ false: '#DFE6E9', true: '#A29BFE' }}
+              />
+            </View>
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.cancelBtn]}
@@ -318,10 +353,36 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  cardInactive: {
+    opacity: 0.6,
+  },
   cardContent: {
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  actionBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnVisible: {
+    backgroundColor: '#00B894',
+  },
+  btnHidden: {
+    backgroundColor: '#636E72',
+  },
+  btnDelete: {
+    backgroundColor: '#E17055',
+  },
+  actionIcon: {
+    fontSize: 16,
   },
   iconContainer: {
     width: 50,
@@ -430,6 +491,12 @@ const styles = StyleSheet.create({
   textArea: {
     height: 80,
     textAlignVertical: 'top',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
   },
   modalButtons: {
     flexDirection: 'row',

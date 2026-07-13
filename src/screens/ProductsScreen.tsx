@@ -86,59 +86,85 @@ export function ProductsScreen({ navigation }: any) {
     const allImages = [item.image, ...(item.images ?? [])].filter(Boolean) as string[];
 
     return (
-      <TouchableOpacity
-        style={styles.productCard}
-        onPress={() => navigation.navigate('ProductForm', { product: item })}
-        onLongPress={() => handleDelete(item)}
-      >
-        <View style={styles.imageContainer}>
-          {allImages.length > 0 ? (
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              style={styles.imageScroll}
-            >
-              {allImages.map((uri, index) => (
-                <Image
-                  key={`${item.id}-${index}`}
-                  source={{ uri }}
-                  style={styles.productImage}
-                />
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text>📦</Text>
-            </View>
-          )}
-          {allImages.length > 1 && (
-            <View style={styles.imageCounter}>
-              <Text style={styles.imageCounterText}>{allImages.length} 📷</Text>
-            </View>
-          )}
-          {item.stock === 0 && (
-            <View style={styles.outOfStockBadge}>
-              <Text style={styles.badgeText}>Sin Stock</Text>
-            </View>
-          )}
-          {item.is_featured && (
-            <View style={styles.featuredBadge}>
-              <Text style={styles.badgeText}>⭐</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.productSku}>{item.sku}</Text>
-          <View style={styles.priceStock}>
-            <Text style={styles.productPrice}>${parseFloat(item.price).toFixed(2)}</Text>
-            <Text style={[styles.productStock, item.stock <= item.min_stock && styles.lowStock]}>
-              Stock: {item.stock}
-            </Text>
+      <View style={[styles.productCard, !item.is_active && styles.productCardInactive]}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ProductForm', { product: item })}
+        >
+          <View style={styles.imageContainer}>
+            {allImages.length > 0 ? (
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                style={styles.imageScroll}
+              >
+                {allImages.map((uri, index) => (
+                  <Image
+                    key={`${item.id}-${index}`}
+                    source={{ uri }}
+                    style={styles.productImage}
+                  />
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Text>📦</Text>
+              </View>
+            )}
+            {allImages.length > 1 && (
+              <View style={styles.imageCounter}>
+                <Text style={styles.imageCounterText}>{allImages.length} 📷</Text>
+              </View>
+            )}
+            {item.stock === 0 && (
+              <View style={styles.outOfStockBadge}>
+                <Text style={styles.badgeText}>Sin Stock</Text>
+              </View>
+            )}
+            {item.is_featured && (
+              <View style={styles.featuredBadge}>
+                <Text style={styles.badgeText}>⭐</Text>
+              </View>
+            )}
+            {!item.is_active && (
+              <View style={styles.hiddenOverlay}>
+                <Text style={styles.hiddenOverlayText}>OCULTO</Text>
+              </View>
+            )}
           </View>
+          <View style={styles.productInfo}>
+            <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.productSku}>{item.sku}</Text>
+            <View style={styles.priceStock}>
+              <Text style={styles.productPrice}>${parseFloat(item.price).toFixed(2)}</Text>
+              <Text style={[styles.productStock, item.stock <= item.min_stock && styles.lowStock]}>
+                Stock: {item.stock}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+        <View style={styles.productActions}>
+          <TouchableOpacity
+            style={[styles.productActionBtn, item.is_active ? styles.btnVisible : styles.btnHidden]}
+            onPress={async () => {
+              try {
+                await api.toggleProductActive(item.id);
+                fetchProducts();
+              } catch {
+                Alert.alert('Error', 'No se pudo cambiar la visibilidad');
+              }
+            }}
+          >
+            <Text style={styles.productActionIcon}>{item.is_active ? '👁' : '🚫'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.productActionBtn, styles.btnDelete]}
+            onPress={() => handleDelete(item)}
+          >
+            <Text style={styles.productActionIcon}>🗑</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -246,10 +272,57 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  productCardInactive: {
+    opacity: 0.7,
+  },
   imageContainer: {
     height: 110,
     backgroundColor: '#DFE6E9',
     position: 'relative',
+  },
+  hiddenOverlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hiddenOverlayText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    backgroundColor: 'rgba(225,112,85,0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  productActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F5',
+  },
+  productActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productActionIcon: {
+    fontSize: 14,
+  },
+  btnVisible: {
+    backgroundColor: '#00B894',
+  },
+  btnHidden: {
+    backgroundColor: '#636E72',
+  },
+  btnDelete: {
+    backgroundColor: '#E17055',
   },
   imageScroll: {
     flex: 1,
