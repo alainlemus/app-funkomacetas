@@ -37,10 +37,6 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO"
       ]
     },
@@ -54,7 +50,8 @@
           "photosPermission": "Funkomacetas necesita acceso a la biblioteca de fotos",
           "cameraPermission": "Funkomacetas necesita acceso a la camara para tomar fotos"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {
@@ -63,11 +60,7 @@
     },
     "owner": "alainlemus",
     "updates": {
-      "enabled": false,
-      "url": "https://u.expo.dev/1e0910ac-a54c-4f41-9762-763ce701cfa9"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
+      "enabled": false
     }
   }
 }

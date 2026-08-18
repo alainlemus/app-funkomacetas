@@ -11,13 +11,11 @@
       }
     },
     "local": {
-      "channel": "local",
       "env": {
         "EXPO_PUBLIC_API_URL": "http://sistema-funkos.test/api"
       }
     },
     "staging": {
-      "channel": "staging",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
@@ -27,7 +25,6 @@
       }
     },
     "production": {
-      "channel": "production",
       "android": {
         "buildType": "app-bundle"
       },
