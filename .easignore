@@ -1,0 +1,6 @@
+.codegraph
+node_modules
+.git
+.expo
+.expo-shared
+*.log
