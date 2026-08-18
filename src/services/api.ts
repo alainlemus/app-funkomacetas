@@ -2,12 +2,8 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const getApiUrl = (): string => {
-  if (process.env.API_URL) {
-    return process.env.API_URL;
-  }
-
-  if (process.env.STAGING_API_URL) {
-    return process.env.STAGING_API_URL;
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
   }
 
   return 'http://sistema-funkos.test/api';

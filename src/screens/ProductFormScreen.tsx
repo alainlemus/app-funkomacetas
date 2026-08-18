@@ -14,9 +14,21 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { api } from '../services/api';
 import { Funkomaceta, Category, Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const MAX_IMAGE_WIDTH = 1200;
+
+async function compressImage(uri: string, width?: number): Promise<string> {
+  const actions = width && width > MAX_IMAGE_WIDTH ? [{ resize: { width: MAX_IMAGE_WIDTH } }] : [];
+  const result = await ImageManipulator.manipulateAsync(uri, actions, {
+    compress: 0.7,
+    format: ImageManipulator.SaveFormat.JPEG,
+  });
+  return result.uri;
+}
 
 export function ProductFormScreen({ navigation, route }: any) {
   const product = route.params?.product;
@@ -67,10 +79,11 @@ export function ProductFormScreen({ navigation, route }: any) {
     });
 
     if (!result.canceled && result.assets[0]) {
-      const uri = result.assets[0].uri;
+      const asset = result.assets[0];
       setIsLoading(true);
       try {
-        const url = await api.uploadImage(uri);
+        const compressedUri = await compressImage(asset.uri, asset.width);
+        const url = await api.uploadImage(compressedUri);
         if (images.length === 0 && !mainImage) {
           setMainImage(url);
         }
@@ -83,54 +96,32 @@ export function ProductFormScreen({ navigation, route }: any) {
     }
   };
 
-  const takeMultiplePhotos = async () => {
+  const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permiso denegado', 'Necesitas dar permiso a la camara para tomar fotos');
       return;
     }
 
-    let continueTaking = true;
-    const newImages: string[] = [];
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
 
-    while (continueTaking) {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        const uri = result.assets[0].uri;
-        newImages.push(uri);
-      }
-
-      if (result.canceled || newImages.length === 0) {
-        continueTaking = false;
-      } else {
-        Alert.alert(
-          '¿Tomar otra foto?',
-          `Tienes ${newImages.length} foto(s). ¿Deseas tomar otra o terminar?`,
-          [
-            { text: 'Terminar', onPress: () => { continueTaking = false; } },
-            { text: 'Otra foto', onPress: () => { continueTaking = true; } },
-          ]
-        );
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
-
-    if (newImages.length > 0) {
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
       setIsLoading(true);
       try {
-        const urls = await api.uploadImages(newImages);
-        setImages([...images, ...urls]);
-        if (!mainImage && urls.length > 0) {
-          setMainImage(urls[0]);
+        const compressedUri = await compressImage(asset.uri, asset.width);
+        const url = await api.uploadImage(compressedUri);
+        if (!mainImage) {
+          setMainImage(url);
         }
+        setImages([...images, url]);
       } catch {
-        Alert.alert('Error', 'No se pudieron subir las imagenes');
+        Alert.alert('Error', 'No se pudo subir la imagen');
       } finally {
         setIsLoading(false);
       }
@@ -147,14 +138,17 @@ export function ProductFormScreen({ navigation, route }: any) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
+      allowsMultipleSelection: true,
       quality: 0.8,
     });
 
     if (!result.canceled && result.assets.length > 0) {
-      const uris = result.assets.map((a) => a.uri);
       setIsLoading(true);
       try {
-        const urls = await api.uploadImages(uris);
+        const compressedUris = await Promise.all(
+          result.assets.map((a) => compressImage(a.uri, a.width))
+        );
+        const urls = await api.uploadImages(compressedUris);
         setImages([...images, ...urls]);
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
@@ -340,8 +334,8 @@ export function ProductFormScreen({ navigation, route }: any) {
                 </ScrollView>
               )}
               <View style={styles.imageButtons}>
-                <TouchableOpacity style={styles.imageBtn} onPress={takeMultiplePhotos} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>📷 Tomar fotos</Text>}
+                <TouchableOpacity style={styles.imageBtn} onPress={takePhoto} disabled={isLoading}>
+                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>📷 Tomar foto</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageBtn} onPress={pickMultipleImages} disabled={isLoading}>
                   {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>🖼️ Galeria</Text>}
