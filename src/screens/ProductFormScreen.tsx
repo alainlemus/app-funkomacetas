@@ -19,10 +19,15 @@ import { api } from '../services/api';
 import { Funkomaceta, Category, Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const MAX_IMAGE_WIDTH = 1200;
+// Lado mayor máximo, igual que el servidor (que además convierte a WebP).
+const MAX_IMAGE_SIDE = 1200;
 
-async function compressImage(uri: string, width?: number): Promise<string> {
-  const actions = width && width > MAX_IMAGE_WIDTH ? [{ resize: { width: MAX_IMAGE_WIDTH } }] : [];
+async function compressImage(uri: string, width?: number, height?: number): Promise<string> {
+  const longest = Math.max(width ?? 0, height ?? 0);
+  const actions =
+    longest > MAX_IMAGE_SIDE
+      ? [{ resize: (height ?? 0) > (width ?? 0) ? { height: MAX_IMAGE_SIDE } : { width: MAX_IMAGE_SIDE } }]
+      : [];
   const result = await ImageManipulator.manipulateAsync(uri, actions, {
     compress: 0.7,
     format: ImageManipulator.SaveFormat.JPEG,
@@ -82,7 +87,7 @@ export function ProductFormScreen({ navigation, route }: any) {
       const asset = result.assets[0];
       setIsLoading(true);
       try {
-        const compressedUri = await compressImage(asset.uri, asset.width);
+        const compressedUri = await compressImage(asset.uri, asset.width, asset.height);
         const url = await api.uploadImage(compressedUri);
         if (images.length === 0 && !mainImage) {
           setMainImage(url);
@@ -114,7 +119,7 @@ export function ProductFormScreen({ navigation, route }: any) {
       const asset = result.assets[0];
       setIsLoading(true);
       try {
-        const compressedUri = await compressImage(asset.uri, asset.width);
+        const compressedUri = await compressImage(asset.uri, asset.width, asset.height);
         const url = await api.uploadImage(compressedUri);
         if (!mainImage) {
           setMainImage(url);
@@ -146,7 +151,7 @@ export function ProductFormScreen({ navigation, route }: any) {
       setIsLoading(true);
       try {
         const compressedUris = await Promise.all(
-          result.assets.map((a) => compressImage(a.uri, a.width))
+          result.assets.map((a) => compressImage(a.uri, a.width, a.height))
         );
         const urls = await api.uploadImages(compressedUris);
         setImages([...images, ...urls]);

@@ -4,6 +4,9 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 
 ## [Sin publicar]
 
+### Cambiado
+- Las fotos se reducen por su lado mayor (1200 px) y se comprimen antes de subirlas; el servidor las convierte a WebP.
+
 ### Agregado
 - La versión de la app se muestra en la pantalla de inicio de sesión.
 - Versionado semántico: el número vive en `package.json` y se sube con `npm run release:*`.
