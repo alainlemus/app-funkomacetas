@@ -2,7 +2,6 @@
   "expo": {
     "name": "El Jardín de las Macetas",
     "slug": "app-funkos",
-    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",

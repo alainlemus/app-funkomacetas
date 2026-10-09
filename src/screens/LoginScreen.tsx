@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Constants from 'expo-constants';
 import {
   View,
   Text,
@@ -77,12 +78,22 @@ export function LoginScreen() {
             )}
           </TouchableOpacity>
         </View>
+        <Text style={styles.version}>v{APP_VERSION}</Text>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
+// La versión sale de package.json (vía app.config.ts); se sube solo con `npm run release:*`.
+const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
+
 const styles = StyleSheet.create({
+  version: {
+    marginTop: 24,
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#B2BEC3',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',

@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 13.0.0"
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -22,7 +23,9 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api"
-      }
+      },
+      "autoIncrement": true,
+      "channel": "staging"
     },
     "production": {
       "android": {
@@ -30,7 +33,9 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://eljardindelasmacetas.com/api"
-      }
+      },
+      "autoIncrement": true,
+      "channel": "production"
     }
   },
   "submit": {
