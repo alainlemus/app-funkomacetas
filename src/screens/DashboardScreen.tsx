@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { FigureStats } from '../types';
+import { colors, fonts } from '../theme';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -75,7 +76,7 @@ export function DashboardScreen({ navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -98,7 +99,7 @@ export function DashboardScreen({ navigation }: any) {
           style={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6C5CE7']} />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[colors.primary]} />
           }
         >
           <View style={styles.statsGrid}>
@@ -221,14 +222,14 @@ export function DashboardScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   centered: {
     flex: 1,
@@ -241,11 +242,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   greeting: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: fonts.display,
     color: '#fff',
   },
   subtitle: {
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   scrollContent: {
     flex: 1,
@@ -274,21 +277,21 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
   },
   primaryCard: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   warningCard: {
-    backgroundColor: '#FDCB6E',
+    backgroundColor: colors.warning,
   },
   dangerCard: {
-    backgroundColor: '#E17055',
+    backgroundColor: colors.danger,
   },
   secondaryCard: {
-    backgroundColor: '#00CEC9',
+    backgroundColor: colors.accent,
   },
   statIcon: {
     fontSize: 24,
@@ -296,7 +299,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: fonts.display,
     color: '#fff',
   },
   statLabel: {
@@ -307,23 +310,23 @@ const styles = StyleSheet.create({
   valueCard: {
     marginHorizontal: 12,
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 3,
   },
   valueLabel: {
     fontSize: 14,
-    color: '#636E72',
+    color: colors.muted,
   },
   valueAmount: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#6C5CE7',
+    fontFamily: fonts.display,
+    color: colors.primary,
     marginTop: 4,
   },
   section: {
@@ -332,13 +335,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2D3436',
+    fontFamily: fonts.display,
+    color: colors.ink,
     marginBottom: 12,
   },
   lowStockItem: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 12,
     marginBottom: 8,
     flexDirection: 'row',
@@ -358,7 +361,7 @@ const styles = StyleSheet.create({
   thumbPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#DFE6E9',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -367,23 +370,23 @@ const styles = StyleSheet.create({
   },
   lowStockName: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
   },
   lowStockStock: {
     fontSize: 12,
-    color: '#E17055',
+    color: colors.danger,
     marginTop: 2,
   },
   addStockBtn: {
-    backgroundColor: '#00B894',
+    backgroundColor: colors.success,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addStockText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     fontSize: 12,
   },
   quickActions: {
@@ -397,12 +400,12 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
   },
@@ -412,8 +415,8 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
   },
   bottomPadding: {
     height: 20,

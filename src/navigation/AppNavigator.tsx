@@ -9,22 +9,22 @@ import { DashboardScreen } from '../screens/DashboardScreen';
 import { FigureFormScreen } from '../screens/FigureFormScreen';
 import { CategoriesScreen } from '../screens/CategoriesScreen';
 import { FiguresScreen } from '../screens/FiguresScreen';
+import { Icon, IconName } from '../components/Icon';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors, fonts } from '../theme';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Dashboard: '🏠',
-    Figuras: '🎭',
-    Categorias: '🏷️',
-  };
-  return (
-    <View style={styles.tabIcon}>
-      <Text style={[styles.tabIconText, focused && styles.tabIconFocused]}>{icons[name]}</Text>
-    </View>
-  );
+const TAB_ICONS: Record<string, { on: IconName; off: IconName }> = {
+  Dashboard: { on: 'home', off: 'home-outline' },
+  Figuras: { on: 'leaf', off: 'leaf-outline' },
+  Categorias: { on: 'pricetags', off: 'pricetags-outline' },
+};
+
+function TabIcon({ name, focused, color }: { name: string; focused: boolean; color: string }) {
+  const icon = TAB_ICONS[name] ?? TAB_ICONS.Dashboard;
+  return <Icon name={focused ? icon.on : icon.off} size={24} color={color} />;
 }
 
 function MainTabs() {
@@ -33,20 +33,22 @@ function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
-        tabBarActiveTintColor: '#6C5CE7',
-        tabBarInactiveTintColor: '#636E72',
+        tabBarIcon: ({ focused, color }) => <TabIcon name={route.name} focused={focused} color={color} />,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           borderTopWidth: 1,
-          borderTopColor: '#DFE6E9',
+          borderTopColor: colors.border,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 8),
           height: 60 + Math.max(insets.bottom, 8),
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontFamily: fonts.semibold,
           marginBottom: 4,
         },
         headerShown: false,
@@ -63,9 +65,9 @@ function AdminStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#6C5CE7' },
+        headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '600' },
+        headerTitleStyle: { fontFamily: fonts.semibold },
         headerBackTitle: 'Regresar',
       }}
     >
@@ -124,11 +126,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   loadingText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: fonts.display,
     color: '#fff',
   },
   tabIcon: {

@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { colors, fonts } from '../theme';
 
 export function LoginScreen() {
   const { login } = useAuth();
@@ -92,11 +93,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: 'center',
     fontSize: 12,
-    color: '#B2BEC3',
+    color: colors.placeholder,
   },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -108,37 +109,37 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logoImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 16,
-    marginBottom: 16,
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 12,
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2D3436',
+    fontFamily: fonts.display,
+    color: colors.ink,
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#636E72',
+    color: colors.muted,
   },
   form: {
     gap: 16,
   },
   input: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 999,
+    paddingHorizontal: 22,
     paddingVertical: 14,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   button: {
-    backgroundColor: '#6C5CE7',
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
@@ -149,6 +150,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
 });

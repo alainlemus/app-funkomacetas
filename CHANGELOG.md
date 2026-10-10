@@ -9,6 +9,7 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 > Requiere backend 1.1.0 o posterior (rutas `/api/figures`).
 
 ### Cambiado
+- Nuevo diseño con la identidad del logo: verde, crema y rojo, tipografías Fredoka y Nunito, encabezados y tarjetas redondeados, iconos nuevos en la barra inferior y pantalla de inicio de sesión con el logo grande.
 - Se adaptó al nuevo modelo: ahora solo hay Categorías y Figuras, y la figura es el producto (precio, costo, stock y fotos). Se quitó la pantalla de "Productos" y el selector de figura del formulario.
 - El tablero usa los totales de todo el inventario (antes solo contaba la primera página), y sus tarjetas abren el listado ya filtrado.
 - El formulario permite guardar figuras sin precio si están inactivas (las del catálogo del proveedor llegan así).

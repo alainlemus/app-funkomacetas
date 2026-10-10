@@ -15,6 +15,7 @@ import {
 import { api } from '../services/api';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, fonts } from '../theme';
 
 type Filter = 'all' | 'active' | 'inactive' | 'no_price' | 'low_stock';
 
@@ -191,7 +192,7 @@ export function FiguresScreen({ navigation, route }: any) {
             placeholder="Buscar por nombre o SKU..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.placeholder}
             autoCorrect={false}
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
@@ -209,7 +210,7 @@ export function FiguresScreen({ navigation, route }: any) {
 
         {isLoading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color="#6C5CE7" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <FlatList
@@ -221,9 +222,9 @@ export function FiguresScreen({ navigation, route }: any) {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6C5CE7']} />
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[colors.primary]} />
             }
-            ListFooterComponent={isLoadingMore ? <ActivityIndicator style={styles.footer} color="#6C5CE7" /> : null}
+            ListFooterComponent={isLoadingMore ? <ActivityIndicator style={styles.footer} color={colors.primary} /> : null}
             ListEmptyComponent={
               <View style={styles.empty}>
                 <Text style={styles.emptyIcon}>🎭</Text>
@@ -248,7 +249,7 @@ export function FiguresScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
     position: 'relative',
   },
   safeArea: {
@@ -269,17 +270,17 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
     color: '#fff',
   },
   filterTextActive: {
-    color: '#6C5CE7',
+    color: colors.primary,
   },
   inactiveCard: {
     opacity: 0.7,
   },
   noPrice: {
-    color: '#E17055',
+    color: colors.danger,
     fontSize: 12,
   },
   footer: {
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   centered: {
     flex: 1,
@@ -298,11 +299,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: fonts.display,
     color: '#fff',
     marginBottom: 12,
   },
@@ -312,7 +315,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#2D3436',
+    color: colors.ink,
   },
   listContent: {
     padding: 8,
@@ -320,18 +323,18 @@ const styles = StyleSheet.create({
   productCard: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     margin: 4,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
   },
   imageContainer: {
     height: 110,
-    backgroundColor: '#DFE6E9',
+    backgroundColor: colors.border,
   },
   productImage: {
     width: '100%',
@@ -347,7 +350,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     left: 6,
-    backgroundColor: '#E17055',
+    backgroundColor: colors.danger,
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     right: 6,
-    backgroundColor: '#FDCB6E',
+    backgroundColor: colors.warning,
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -366,19 +369,19 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontSize: 9,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   productInfo: {
     padding: 10,
   },
   productName: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
   },
   productSku: {
     fontSize: 10,
-    color: '#636E72',
+    color: colors.muted,
     marginTop: 2,
   },
   priceStock: {
@@ -389,15 +392,15 @@ const styles = StyleSheet.create({
   },
   productPrice: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#6C5CE7',
+    fontFamily: fonts.display,
+    color: colors.primary,
   },
   productStock: {
     fontSize: 11,
-    color: '#00B894',
+    color: colors.success,
   },
   lowStock: {
-    color: '#E17055',
+    color: colors.danger,
   },
   empty: {
     flex: 1,
@@ -411,7 +414,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#636E72',
+    color: colors.muted,
   },
   fab: {
     position: 'absolute',
@@ -420,10 +423,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -432,6 +435,6 @@ const styles = StyleSheet.create({
   fabText: {
     fontSize: 28,
     color: '#fff',
-    fontWeight: '300',
+    fontFamily: fonts.regular,
   },
 });

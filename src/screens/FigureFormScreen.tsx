@@ -18,6 +18,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { api } from '../services/api';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, fonts } from '../theme';
 
 // Lado mayor máximo, igual que el servidor (que además convierte a WebP).
 const MAX_IMAGE_SIDE = 1200;
@@ -283,12 +284,12 @@ export function FigureFormScreen({ navigation, route }: any) {
 
             <View style={styles.switchRow}>
               <Text style={styles.label}>Figura Destacada</Text>
-              <Switch value={isFeatured} onValueChange={setIsFeatured} trackColor={{ false: '#DFE6E9', true: '#A29BFE' }} />
+              <Switch value={isFeatured} onValueChange={setIsFeatured} trackColor={{ false: colors.border, true: colors.primaryLight }} />
             </View>
 
             <View style={styles.switchRow}>
               <Text style={styles.label}>Activo</Text>
-              <Switch value={isActive} onValueChange={setIsActive} trackColor={{ false: '#DFE6E9', true: '#A29BFE' }} />
+              <Switch value={isActive} onValueChange={setIsActive} trackColor={{ false: colors.border, true: colors.primaryLight }} />
             </View>
 
             <Text style={styles.label}>Imagenes</Text>
@@ -313,10 +314,10 @@ export function FigureFormScreen({ navigation, route }: any) {
               )}
               <View style={styles.imageButtons}>
                 <TouchableOpacity style={styles.imageBtn} onPress={takePhoto} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>📷 Tomar foto</Text>}
+                  {isLoading ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.imageBtnText}>📷 Tomar foto</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageBtn} onPress={pickMultipleImages} disabled={isLoading}>
-                  {isLoading ? <ActivityIndicator color="#6C5CE7" /> : <Text style={styles.imageBtnText}>🖼️ Galeria</Text>}
+                  {isLoading ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.imageBtnText}>🖼️ Galeria</Text>}
                 </TouchableOpacity>
               </View>
             </View>
@@ -342,7 +343,7 @@ export function FigureFormScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -352,8 +353,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
     marginBottom: 8,
     marginTop: 12,
   },
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   textArea: {
     height: 80,
@@ -388,15 +389,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   chipSelected: {
-    backgroundColor: '#6C5CE7',
-    borderColor: '#6C5CE7',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   chipText: {
     fontSize: 13,
-    color: '#636E72',
+    color: colors.muted,
   },
   chipTextSelected: {
     color: '#fff',
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
     bottom: 4,
     left: 4,
     right: 4,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     borderRadius: 4,
     paddingVertical: 2,
     alignItems: 'center',
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   mainBadgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   removeBtn: {
     position: 'absolute',
@@ -444,14 +445,14 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#E17055',
+    backgroundColor: colors.danger,
     justifyContent: 'center',
     alignItems: 'center',
   },
   removeBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.bold,
   },
   setMainBtn: {
     position: 'absolute',
@@ -479,15 +480,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#6C5CE7',
+    borderColor: colors.primary,
     borderStyle: 'dashed',
   },
   imageBtnText: {
-    color: '#6C5CE7',
-    fontWeight: '600',
+    color: colors.primary,
+    fontFamily: fonts.semibold,
   },
   saveBtn: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
@@ -500,6 +501,6 @@ const styles = StyleSheet.create({
   saveBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
 });

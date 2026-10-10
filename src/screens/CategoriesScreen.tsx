@@ -15,6 +15,7 @@ import {
 import { api } from '../services/api';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, fonts } from '../theme';
 
 export function CategoriesScreen({ navigation }: any) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -156,7 +157,7 @@ export function CategoriesScreen({ navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -172,7 +173,7 @@ export function CategoriesScreen({ navigation }: any) {
             placeholder="Buscar categoria..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.placeholder}
           />
         </View>
 
@@ -182,7 +183,7 @@ export function CategoriesScreen({ navigation }: any) {
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6C5CE7']} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[colors.primary]} />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -228,7 +229,7 @@ export function CategoriesScreen({ navigation }: any) {
               <Switch
                 value={isActive}
                 onValueChange={setIsActive}
-                trackColor={{ false: '#DFE6E9', true: '#A29BFE' }}
+                trackColor={{ false: colors.border, true: colors.primaryLight }}
               />
             </View>
 
@@ -262,7 +263,7 @@ export function CategoriesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
     position: 'relative',
   },
   safeArea: {
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   },
   headerBg: {
     height: 100,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   centered: {
     flex: 1,
@@ -281,11 +282,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: fonts.display,
     color: '#fff',
     marginBottom: 12,
   },
@@ -295,18 +298,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#2D3436',
+    color: colors.ink,
   },
   listContent: {
     padding: 12,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     marginBottom: 8,
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
   },
@@ -320,17 +323,17 @@ const styles = StyleSheet.create({
   },
   cardName: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
   },
   cardDesc: {
     fontSize: 12,
-    color: '#636E72',
+    color: colors.muted,
     marginTop: 2,
   },
   cardCount: {
     fontSize: 11,
-    color: '#B2BEC3',
+    color: colors.placeholder,
     marginTop: 4,
   },
   statusBadge: {
@@ -339,15 +342,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeBadge: {
-    backgroundColor: '#00B894',
+    backgroundColor: colors.success,
   },
   inactiveBadge: {
-    backgroundColor: '#636E72',
+    backgroundColor: colors.muted,
   },
   statusText: {
     color: '#fff',
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
   empty: {
     flex: 1,
@@ -361,7 +364,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#636E72',
+    color: colors.muted,
   },
   fab: {
     position: 'absolute',
@@ -370,10 +373,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -382,7 +385,7 @@ const styles = StyleSheet.create({
   fabText: {
     fontSize: 28,
     color: '#fff',
-    fontWeight: '300',
+    fontFamily: fonts.regular,
   },
   modalOverlay: {
     flex: 1,
@@ -397,25 +400,25 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2D3436',
+    fontFamily: fonts.display,
+    color: colors.ink,
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#2D3436',
+    fontFamily: fonts.semibold,
+    color: colors.ink,
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   textArea: {
     height: 80,
@@ -439,22 +442,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelBtn: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#DFE6E9',
+    borderColor: colors.border,
   },
   cancelBtnText: {
-    color: '#636E72',
-    fontWeight: '600',
+    color: colors.muted,
+    fontFamily: fonts.semibold,
   },
   saveBtn: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: colors.primary,
   },
   saveBtnDisabled: {
     opacity: 0.7,
   },
   saveBtnText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: fonts.semibold,
   },
 });
