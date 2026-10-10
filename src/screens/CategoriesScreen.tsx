@@ -143,7 +143,7 @@ export function CategoriesScreen({ navigation }: any) {
             {item.description || 'Sin descripcion'}
           </Text>
           <Text style={styles.cardCount}>
-            {item.funkomacetas_count || 0} productos
+            {item.figures_count || 0} figuras
           </Text>
         </View>
         <View style={[styles.statusBadge, item.is_active ? styles.activeBadge : styles.inactiveBadge]}>

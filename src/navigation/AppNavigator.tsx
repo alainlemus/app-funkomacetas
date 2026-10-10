@@ -6,8 +6,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
-import { ProductsScreen } from '../screens/ProductsScreen';
-import { ProductFormScreen } from '../screens/ProductFormScreen';
+import { FigureFormScreen } from '../screens/FigureFormScreen';
 import { CategoriesScreen } from '../screens/CategoriesScreen';
 import { FiguresScreen } from '../screens/FiguresScreen';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,9 +17,8 @@ const Tab = createBottomTabNavigator();
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Dashboard: '🏠',
-    Productos: '📦',
-    Categorias: '🏷️',
     Figuras: '🎭',
+    Categorias: '🏷️',
   };
   return (
     <View style={styles.tabIcon}>
@@ -55,9 +53,8 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Productos" component={ProductsScreen} />
-      <Tab.Screen name="Categorias" component={CategoriesScreen} />
       <Tab.Screen name="Figuras" component={FiguresScreen} />
+      <Tab.Screen name="Categorias" component={CategoriesScreen} />
     </Tab.Navigator>
   );
 }
@@ -78,10 +75,10 @@ function AdminStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="ProductForm"
-        component={ProductFormScreen}
+        name="FigureForm"
+        component={FigureFormScreen}
         options={({ route }) => ({
-          title: (route.params as any)?.product ? 'Editar Producto' : 'Nuevo Producto',
+          title: (route.params as any)?.figure ? 'Editar Figura' : 'Nueva Figura',
         })}
       />
     </Stack.Navigator>

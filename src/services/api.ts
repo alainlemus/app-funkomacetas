@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import type { Figure, FigureStats, PaginatedResponse } from '../types';
 
 const getApiUrl = (): string => {
   if (process.env.EXPO_PUBLIC_API_URL) {
@@ -88,80 +89,47 @@ class ApiService {
     await this.api.delete(`/categories/${id}`);
   }
 
-  async getFigures() {
-    const response = await this.api.get('/figures');
+  async getFigures(params?: {
+    search?: string;
+    category_id?: number;
+    active?: boolean;
+    no_price?: boolean;
+    low_stock?: boolean;
+    featured?: boolean;
+    page?: number;
+    per_page?: number;
+  }): Promise<PaginatedResponse<Figure>> {
+    const response = await this.api.get('/figures', { params });
+    return response.data;
+  }
+
+  async getFigureStats(): Promise<FigureStats> {
+    const response = await this.api.get('/figures/stats');
     return response.data.data;
   }
 
-  async createFigure(data: { name: string; sku: string; description?: string }) {
+  async getFigure(id: number): Promise<Figure> {
+    const response = await this.api.get(`/figures/${id}`);
+    return response.data.data;
+  }
+
+  async createFigure(data: FigureInput): Promise<Figure> {
     const response = await this.api.post('/figures', data);
     return response.data.data;
   }
 
-  async updateFigure(id: number, data: { name?: string; sku?: string; description?: string }) {
+  async updateFigure(id: number, data: Partial<FigureInput>): Promise<Figure> {
     const response = await this.api.put(`/figures/${id}`, data);
+    return response.data.data;
+  }
+
+  async updateStock(id: number, stock: number): Promise<Figure> {
+    const response = await this.api.patch(`/figures/${id}/stock`, { stock });
     return response.data.data;
   }
 
   async deleteFigure(id: number) {
     await this.api.delete(`/figures/${id}`);
-  }
-
-  async getProducts(params?: { category_id?: number; featured?: boolean; in_stock?: boolean }) {
-    const response = await this.api.get('/products', { params });
-    return response.data;
-  }
-
-  async getProduct(id: number) {
-    const response = await this.api.get(`/products/${id}`);
-    return response.data.data;
-  }
-
-  async createProduct(data: {
-    name: string;
-    sku: string;
-    price: number;
-    stock: number;
-    category_id?: number;
-    figure_id?: number;
-    description?: string;
-    cost?: number;
-    min_stock?: number;
-    image?: string;
-    images?: string[];
-    is_active?: boolean;
-    is_featured?: boolean;
-  }) {
-    const response = await this.api.post('/products', data);
-    return response.data.data;
-  }
-
-  async updateProduct(id: number, data: Partial<{
-    name: string;
-    sku: string;
-    price: number;
-    stock: number;
-    category_id: number;
-    figure_id: number;
-    description: string;
-    cost: number;
-    min_stock: number;
-    image: string;
-    images: string[];
-    is_active: boolean;
-    is_featured: boolean;
-  }>) {
-    const response = await this.api.put(`/products/${id}`, data);
-    return response.data.data;
-  }
-
-  async updateStock(id: number, stock: number) {
-    const response = await this.api.patch(`/products/${id}/stock`, { stock });
-    return response.data.data;
-  }
-
-  async deleteProduct(id: number) {
-    await this.api.delete(`/products/${id}`);
   }
 
   async uploadImage(uri: string): Promise<string> {
@@ -215,10 +183,25 @@ class ApiService {
     return response.data.data;
   }
 
-  async getPublicProducts() {
-    const response = await this.api.get('/public/products');
+  async getPublicFigures() {
+    const response = await this.api.get('/public/figures');
     return response.data;
   }
+}
+
+export interface FigureInput {
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+  category_id?: number | null;
+  description?: string;
+  cost?: number;
+  min_stock?: number;
+  image?: string;
+  images?: string[];
+  is_active?: boolean;
+  is_featured?: boolean;
 }
 
 export const api = new ApiService();

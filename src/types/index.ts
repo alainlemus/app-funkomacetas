@@ -11,23 +11,12 @@ export interface Category {
   slug: string;
   description: string | null;
   is_active: boolean;
-  funkomacetas_count?: number;
+  figures_count?: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface Figure {
-  id: number;
-  name: string;
-  slug: string;
-  sku: string;
-  description: string | null;
-  funkomacetas_count?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Funkomaceta {
   id: number;
   name: string;
   slug: string;
@@ -42,11 +31,21 @@ export interface Funkomaceta {
   is_active: boolean;
   is_featured: boolean;
   category_id: number | null;
-  figure_id: number | null;
   category?: Category;
-  figure?: Figure;
   created_at: string;
   updated_at: string;
+}
+
+export interface FigureStats {
+  total: number;
+  active: number;
+  inactive: number;
+  no_price: number;
+  low_stock: number;
+  out_of_stock: number;
+  inventory_value: number;
+  categories: number;
+  low_stock_items: Figure[];
 }
 
 export interface PaginatedResponse<T> {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,262 +7,240 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Image,
   RefreshControl,
-  Modal,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { api } from '../services/api';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export function FiguresScreen({ navigation }: any) {
+type Filter = 'all' | 'active' | 'inactive' | 'no_price' | 'low_stock';
+
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'all', label: 'Todas' },
+  { key: 'active', label: 'Activas' },
+  { key: 'inactive', label: 'Inactivas' },
+  { key: 'no_price', label: 'Sin precio' },
+  { key: 'low_stock', label: 'Stock bajo' },
+];
+
+const PAGE_SIZE = 30;
+
+function filterParams(filter: Filter) {
+  switch (filter) {
+    case 'active':
+      return { active: true };
+    case 'inactive':
+      return { active: false };
+    case 'no_price':
+      return { no_price: true };
+    case 'low_stock':
+      return { low_stock: true };
+    default:
+      return {};
+  }
+}
+
+export function FiguresScreen({ navigation, route }: any) {
   const [figures, setFigures] = useState<Figure[]>([]);
-  const [filteredFigures, setFilteredFigures] = useState<Figure[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingFigure, setEditingFigure] = useState<Figure | null>(null);
-  const [name, setName] = useState('');
-  const [sku, setSku] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const requestId = useRef(0);
 
+  // El tablero puede abrir esta pantalla con un filtro (p. ej. "Sin precio").
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', fetchFigures);
+    const unsubscribe = navigation.addListener('focus', () => {
+      const requested = route?.params?.filter as Filter | undefined;
+      if (requested) {
+        setFilter(requested);
+        navigation.setParams({ filter: undefined });
+      } else {
+        load(1, true);
+      }
+    });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, route?.params?.filter, debouncedQuery, filter]);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      setFilteredFigures(
-        figures.filter(
-          (f) =>
-            f.name.toLowerCase().includes(query) ||
-            f.sku.toLowerCase().includes(query)
-        )
-      );
-    } else {
-      setFilteredFigures(figures);
-    }
-  }, [searchQuery, figures]);
+    const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
-  const fetchFigures = async () => {
-    try {
-      const data = await api.getFigures();
-      setFigures(data);
-      setFilteredFigures(data);
-    } catch {
-      Alert.alert('Error', 'No se pudieron cargar las figuras');
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
-  };
+  useEffect(() => {
+    setIsLoading(true);
+    load(1, true);
+  }, [debouncedQuery, filter]);
+
+  const load = useCallback(
+    async (nextPage: number, replace: boolean) => {
+      const id = ++requestId.current;
+      try {
+        const response = await api.getFigures({
+          page: nextPage,
+          per_page: PAGE_SIZE,
+          search: debouncedQuery || undefined,
+          ...filterParams(filter),
+        });
+        if (id !== requestId.current) return; // llegó una respuesta más nueva
+        setFigures((prev) => (replace ? response.data : [...prev, ...response.data]));
+        setTotal(response.total);
+        setPage(response.current_page);
+        setLastPage(response.last_page);
+      } catch {
+        if (id === requestId.current) Alert.alert('Error', 'No se pudieron cargar las figuras');
+      } finally {
+        if (id === requestId.current) {
+          setIsLoading(false);
+          setIsLoadingMore(false);
+          setRefreshing(false);
+        }
+      }
+    },
+    [debouncedQuery, filter]
+  );
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchFigures();
+    load(1, true);
   };
 
-  const openModal = (figure?: Figure) => {
-    if (figure) {
-      setEditingFigure(figure);
-      setName(figure.name);
-      setSku(figure.sku);
-      setDescription(figure.description || '');
-    } else {
-      setEditingFigure(null);
-      setName('');
-      setSku('');
-      setDescription('');
-    }
-    setModalVisible(true);
-  };
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      Alert.alert('Error', 'El nombre es requerido');
-      return;
-    }
-    if (!sku.trim()) {
-      Alert.alert('Error', 'El SKU es requerido');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      if (editingFigure) {
-        await api.updateFigure(editingFigure.id, {
-          name: name.trim(),
-          sku: sku.trim(),
-          description: description.trim() || undefined,
-        });
-      } else {
-        await api.createFigure({
-          name: name.trim(),
-          sku: sku.trim(),
-          description: description.trim() || undefined,
-        });
-      }
-      setModalVisible(false);
-      fetchFigures();
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'No se pudo guardar');
-    } finally {
-      setIsSaving(false);
-    }
+  const handleEndReached = () => {
+    if (isLoadingMore || isLoading || page >= lastPage) return;
+    setIsLoadingMore(true);
+    load(page + 1, false);
   };
 
   const handleDelete = (figure: Figure) => {
-    Alert.alert(
-      'Eliminar Figura',
-      `Estas seguro de eliminar "${figure.name}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.deleteFigure(figure.id);
-              fetchFigures();
-            } catch {
-              Alert.alert('Error', 'No se pudo eliminar la figura');
-            }
-          },
+    Alert.alert('Eliminar Figura', `Estas seguro de eliminar "${figure.name}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.deleteFigure(figure.id);
+            load(1, true);
+          } catch {
+            Alert.alert('Error', 'No se pudo eliminar la figura');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const renderFigure = ({ item }: { item: Figure }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => openModal(item)}
-      onLongPress={() => handleDelete(item)}
-    >
-      <View style={styles.cardContent}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.icon}>🎭</Text>
-        </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.cardName}>{item.name}</Text>
-          <Text style={styles.cardSku}>{item.sku}</Text>
-          <Text style={styles.cardDesc} numberOfLines={1}>
-            {item.description || 'Sin descripcion'}
-          </Text>
-          <Text style={styles.cardCount}>
-            {item.funkomacetas_count || 0} productos
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-
-  if (isLoading) {
+  const renderFigure = ({ item }: { item: Figure }) => {
+    const price = parseFloat(item.price);
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
-      </View>
+      <TouchableOpacity
+        style={[styles.productCard, !item.is_active && styles.inactiveCard]}
+        onPress={() => navigation.navigate('FigureForm', { figure: item })}
+        onLongPress={() => handleDelete(item)}
+      >
+        <View style={styles.imageContainer}>
+          {item.image ? (
+            <Image source={{ uri: item.image }} style={styles.productImage} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text>🎭</Text>
+            </View>
+          )}
+          {!item.is_active && (
+            <View style={styles.outOfStockBadge}>
+              <Text style={styles.badgeText}>Inactiva</Text>
+            </View>
+          )}
+          {item.is_featured && (
+            <View style={styles.featuredBadge}>
+              <Text style={styles.badgeText}>⭐</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.productInfo}>
+          <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.productSku}>{item.sku}{item.category ? ` · ${item.category.name}` : ''}</Text>
+          <View style={styles.priceStock}>
+            <Text style={[styles.productPrice, price <= 0 && styles.noPrice]}>
+              {price > 0 ? `$${price.toFixed(2)}` : 'Sin precio'}
+            </Text>
+            <Text style={[styles.productStock, item.stock <= item.min_stock && styles.lowStock]}>
+              Stock: {item.stock}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.headerBg} />
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Figuras</Text>
+          <Text style={styles.headerTitle}>Figuras{total ? ` (${total})` : ''}</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar figura..."
+            placeholder="Buscar por nombre o SKU..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
+            autoCorrect={false}
           />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
+            {FILTERS.map((f) => (
+              <TouchableOpacity
+                key={f.key}
+                style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
+                onPress={() => setFilter(f.key)}
+              >
+                <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>{f.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
-        <FlatList
-        data={filteredFigures}
-        renderItem={renderFigure}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6C5CE7']} />
-        }
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🎭</Text>
-            <Text style={styles.emptyText}>
-              {searchQuery ? 'No se encontraron figuras' : 'No hay figuras'}
-            </Text>
+        {isLoading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="#6C5CE7" />
           </View>
-        }
-      />
-
-      <TouchableOpacity style={styles.fab} onPress={() => openModal()}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
-
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingFigure ? 'Editar Figura' : 'Nueva Figura'}
-            </Text>
-
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Nombre de la figura"
-            />
-
-            <Text style={styles.label}>SKU</Text>
-            <TextInput
-              style={styles.input}
-              value={sku}
-              onChangeText={setSku}
-              placeholder="SKU-001"
-              autoCapitalize="characters"
-            />
-
-            <Text style={styles.label}>Descripcion</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Descripcion (opcional)"
-              multiline
-              numberOfLines={3}
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelBtnText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.saveBtn, isSaving && styles.saveBtnDisabled]}
-                onPress={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.saveBtnText}>Guardar</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        ) : (
+          <FlatList
+            data={figures}
+            renderItem={renderFigure}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            contentContainerStyle={styles.listContent}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6C5CE7']} />
+            }
+            ListFooterComponent={isLoadingMore ? <ActivityIndicator style={styles.footer} color="#6C5CE7" /> : null}
+            ListEmptyComponent={
+              <View style={styles.empty}>
+                <Text style={styles.emptyIcon}>🎭</Text>
+                <Text style={styles.emptyText}>
+                  {debouncedQuery || filter !== 'all' ? 'No se encontraron figuras' : 'No hay figuras'}
+                </Text>
+              </View>
+            }
+          />
+        )}
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => navigation.navigate('FigureForm', { figure: null })}
+        >
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     </View>
   );
 }
@@ -275,6 +253,37 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+  },
+  filters: {
+    marginTop: 10,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    marginRight: 8,
+  },
+  filterChipActive: {
+    backgroundColor: '#fff',
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  filterTextActive: {
+    color: '#6C5CE7',
+  },
+  inactiveCard: {
+    opacity: 0.7,
+  },
+  noPrice: {
+    color: '#E17055',
+    fontSize: 12,
+  },
+  footer: {
+    marginVertical: 16,
   },
   headerBg: {
     height: 100,
@@ -306,58 +315,89 @@ const styles = StyleSheet.create({
     color: '#2D3436',
   },
   listContent: {
-    padding: 12,
+    padding: 8,
   },
-  card: {
+  productCard: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 12,
-    marginBottom: 8,
+    margin: 4,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  cardContent: {
-    flexDirection: 'row',
-    padding: 16,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  imageContainer: {
+    height: 110,
     backgroundColor: '#DFE6E9',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
-  icon: {
-    fontSize: 24,
+  outOfStockBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: '#E17055',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
-  cardInfo: {
-    flex: 1,
+  featuredBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#FDCB6E',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  cardName: {
-    fontSize: 15,
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  productInfo: {
+    padding: 10,
+  },
+  productName: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#2D3436',
   },
-  cardSku: {
-    fontSize: 12,
-    color: '#6C5CE7',
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  cardDesc: {
-    fontSize: 12,
+  productSku: {
+    fontSize: 10,
     color: '#636E72',
     marginTop: 2,
   },
-  cardCount: {
+  priceStock: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  productPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6C5CE7',
+  },
+  productStock: {
     fontSize: 11,
-    color: '#B2BEC3',
-    marginTop: 4,
+    color: '#00B894',
+  },
+  lowStock: {
+    color: '#E17055',
   },
   empty: {
     flex: 1,
@@ -393,72 +433,5 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#fff',
     fontWeight: '300',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2D3436',
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2D3436',
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  input: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#DFE6E9',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-  },
-  modalBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelBtn: {
-    backgroundColor: '#F8F9FA',
-    borderWidth: 1,
-    borderColor: '#DFE6E9',
-  },
-  cancelBtnText: {
-    color: '#636E72',
-    fontWeight: '600',
-  },
-  saveBtn: {
-    backgroundColor: '#6C5CE7',
-  },
-  saveBtnDisabled: {
-    opacity: 0.7,
-  },
-  saveBtnText: {
-    color: '#fff',
-    fontWeight: '600',
   },
 });

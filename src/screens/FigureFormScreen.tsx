@@ -16,7 +16,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { api } from '../services/api';
-import { Funkomaceta, Category, Figure } from '../types';
+import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Lado mayor máximo, igual que el servidor (que además convierte a WebP).
@@ -35,26 +35,24 @@ async function compressImage(uri: string, width?: number, height?: number): Prom
   return result.uri;
 }
 
-export function ProductFormScreen({ navigation, route }: any) {
-  const product = route.params?.product;
-  const isEditing = !!product;
+export function FigureFormScreen({ navigation, route }: any) {
+  const figure = route.params?.figure;
+  const isEditing = !!figure;
 
-  const [name, setName] = useState(product?.name || '');
-  const [sku, setSku] = useState(product?.sku || '');
-  const [price, setPrice] = useState(product?.price ? String(product.price) : '');
-  const [stock, setStock] = useState(product?.stock ? String(product.stock) : '0');
-  const [cost, setCost] = useState(product?.cost ? String(product.cost) : '');
-  const [minStock, setMinStock] = useState(product?.min_stock ? String(product.min_stock) : '5');
-  const [description, setDescription] = useState(product?.description || '');
-  const [categoryId, setCategoryId] = useState<number | null>(product?.category_id || null);
-  const [figureId, setFigureId] = useState<number | null>(product?.figure_id || null);
-  const [isFeatured, setIsFeatured] = useState(product?.is_featured || false);
-  const [isActive, setIsActive] = useState(product?.is_active ?? true);
-  const [images, setImages] = useState<string[]>(product?.images || []);
-  const [mainImage, setMainImage] = useState<string>(product?.image || '');
+  const [name, setName] = useState(figure?.name || '');
+  const [sku, setSku] = useState(figure?.sku || '');
+  const [price, setPrice] = useState(figure?.price ? String(figure.price) : '');
+  const [stock, setStock] = useState(figure?.stock ? String(figure.stock) : '0');
+  const [cost, setCost] = useState(figure?.cost ? String(figure.cost) : '');
+  const [minStock, setMinStock] = useState(figure?.min_stock ? String(figure.min_stock) : '5');
+  const [description, setDescription] = useState(figure?.description || '');
+  const [categoryId, setCategoryId] = useState<number | null>(figure?.category_id || null);
+  const [isFeatured, setIsFeatured] = useState(figure?.is_featured || false);
+  const [isActive, setIsActive] = useState(figure?.is_active ?? true);
+  const [images, setImages] = useState<string[]>(figure?.images || []);
+  const [mainImage, setMainImage] = useState<string>(figure?.image || '');
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [figures, setFigures] = useState<Figure[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -64,12 +62,7 @@ export function ProductFormScreen({ navigation, route }: any) {
 
   const fetchData = async () => {
     try {
-      const [cats, figs] = await Promise.all([
-        api.getCategories(),
-        api.getFigures(),
-      ]);
-      setCategories(cats);
-      setFigures(figs);
+      setCategories(await api.getCategories());
     } catch {
       // Silently fail
     }
@@ -188,8 +181,8 @@ export function ProductFormScreen({ navigation, route }: any) {
       Alert.alert('Error', 'El SKU es requerido');
       return;
     }
-    if (!price || parseFloat(price) <= 0) {
-      Alert.alert('Error', 'El precio debe ser mayor a 0');
+    if (isActive && (!price || parseFloat(price) <= 0)) {
+      Alert.alert('Error', 'Para activar la figura el precio debe ser mayor a 0');
       return;
     }
 
@@ -198,13 +191,12 @@ export function ProductFormScreen({ navigation, route }: any) {
       const data = {
         name: name.trim(),
         sku: sku.trim(),
-        price: parseFloat(price),
+        price: parseFloat(price) || 0,
         stock: parseInt(stock) || 0,
         cost: cost ? parseFloat(cost) : undefined,
         min_stock: parseInt(minStock) || 5,
         description: description.trim() || undefined,
         category_id: categoryId || undefined,
-        figure_id: figureId || undefined,
         is_featured: isFeatured,
         is_active: isActive,
         image: mainImage || undefined,
@@ -212,9 +204,9 @@ export function ProductFormScreen({ navigation, route }: any) {
       };
 
       if (isEditing) {
-        await api.updateProduct(product.id, data);
+        await api.updateFigure(figure.id, data);
       } else {
-        await api.createProduct(data);
+        await api.createFigure(data);
       }
       navigation.goBack();
     } catch (error: any) {
@@ -233,14 +225,14 @@ export function ProductFormScreen({ navigation, route }: any) {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.form}>
             <Text style={styles.label}>Nombre *</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre del producto" />
+            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nombre de la figura" />
 
             <Text style={styles.label}>SKU *</Text>
             <TextInput style={styles.input} value={sku} onChangeText={setSku} placeholder="SKU-001" autoCapitalize="characters" />
 
             <View style={styles.row}>
               <View style={styles.half}>
-                <Text style={styles.label}>Precio *</Text>
+                <Text style={styles.label}>Precio{isActive ? ' *' : ''}</Text>
                 <TextInput style={styles.input} value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" />
               </View>
               <View style={styles.half}>
@@ -265,7 +257,7 @@ export function ProductFormScreen({ navigation, route }: any) {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder="Descripcion del producto"
+              placeholder="Descripcion de la figura"
               multiline
               numberOfLines={3}
             />
@@ -289,27 +281,8 @@ export function ProductFormScreen({ navigation, route }: any) {
               ))}
             </View>
 
-            <Text style={styles.label}>Figura</Text>
-            <View style={styles.chipContainer}>
-              <TouchableOpacity
-                style={[styles.chip, !figureId && styles.chipSelected]}
-                onPress={() => setFigureId(null)}
-              >
-                <Text style={[styles.chipText, !figureId && styles.chipTextSelected]}>Ninguna</Text>
-              </TouchableOpacity>
-              {figures.map((fig) => (
-                <TouchableOpacity
-                  key={fig.id}
-                  style={[styles.chip, figureId === fig.id && styles.chipSelected]}
-                  onPress={() => setFigureId(fig.id)}
-                >
-                  <Text style={[styles.chipText, figureId === fig.id && styles.chipTextSelected]}>{fig.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
             <View style={styles.switchRow}>
-              <Text style={styles.label}>Producto Destacado</Text>
+              <Text style={styles.label}>Figura Destacada</Text>
               <Switch value={isFeatured} onValueChange={setIsFeatured} trackColor={{ false: '#DFE6E9', true: '#A29BFE' }} />
             </View>
 

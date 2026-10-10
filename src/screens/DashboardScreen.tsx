@@ -12,16 +12,9 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { Funkomaceta } from '../types';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FigureStats } from '../types';
 
-interface Stats {
-  totalProducts: number;
-  lowStock: number;
-  outOfStock: number;
-  totalCategories: number;
-  totalValue: number;
-}
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface LowStockItem {
   id: number;
@@ -33,7 +26,7 @@ interface LowStockItem {
 
 export function DashboardScreen({ navigation }: any) {
   const { user, logout } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<FigureStats | null>(null);
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,39 +42,19 @@ export function DashboardScreen({ navigation }: any) {
 
   const fetchData = async () => {
     try {
-      const [products, categories] = await Promise.all([
-        api.getProducts(),
-        api.getCategories(),
-      ]);
-
-      const allProducts = products.data as Funkomaceta[];
-      const lowStock = allProducts.filter((p) => p.stock <= p.min_stock && p.stock > 0);
-      const outOfStock = allProducts.filter((p) => p.stock === 0);
-      const totalValue = allProducts.reduce((sum, p) => sum + (parseFloat(p.price) * p.stock), 0);
-
-      setLowStockItems(lowStock.slice(0, 5).map(p => ({
-        id: p.id,
-        name: p.name,
-        stock: p.stock,
-        min_stock: p.min_stock,
-        image: p.image,
-      })));
-
-      setStats({
-        totalProducts: products.total,
-        lowStock: lowStock.length,
-        outOfStock: outOfStock.length,
-        totalCategories: categories.length,
-        totalValue,
-      });
+      const data = await api.getFigureStats();
+      setStats(data);
+      setLowStockItems(
+        data.low_stock_items.map((p) => ({
+          id: p.id,
+          name: p.name,
+          stock: p.stock,
+          min_stock: p.min_stock,
+          image: p.image,
+        }))
+      );
     } catch {
-      setStats({
-        totalProducts: 0,
-        lowStock: 0,
-        outOfStock: 0,
-        totalCategories: 0,
-        totalValue: 0,
-      });
+      setStats(null);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -131,29 +104,29 @@ export function DashboardScreen({ navigation }: any) {
           <View style={styles.statsGrid}>
             <TouchableOpacity
               style={[styles.statCard, styles.primaryCard]}
-              onPress={() => navigation.navigate('Productos')}
+              onPress={() => navigation.navigate('Figuras', { filter: 'all' })}
             >
-              <Text style={styles.statIcon}>📦</Text>
-              <Text style={styles.statValue}>{stats?.totalProducts || 0}</Text>
-              <Text style={styles.statLabel}>Productos</Text>
+              <Text style={styles.statIcon}>🎭</Text>
+              <Text style={styles.statValue}>{stats?.total || 0}</Text>
+              <Text style={styles.statLabel}>Figuras ({stats?.active || 0} activas)</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.statCard, styles.warningCard]}
-              onPress={() => navigation.navigate('Productos')}
+              onPress={() => navigation.navigate('Figuras', { filter: 'low_stock' })}
             >
               <Text style={styles.statIcon}>⚠️</Text>
-            <Text style={styles.statValue}>{stats?.lowStock || 0}</Text>
+            <Text style={styles.statValue}>{stats?.low_stock || 0}</Text>
             <Text style={styles.statLabel}>Stock Bajo</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.statCard, styles.dangerCard]}
-            onPress={() => navigation.navigate('Productos')}
+            onPress={() => navigation.navigate('Figuras', { filter: 'no_price' })}
           >
-            <Text style={styles.statIcon}>❌</Text>
-            <Text style={styles.statValue}>{stats?.outOfStock || 0}</Text>
-            <Text style={styles.statLabel}>Sin Stock</Text>
+            <Text style={styles.statIcon}>💲</Text>
+            <Text style={styles.statValue}>{stats?.no_price || 0}</Text>
+            <Text style={styles.statLabel}>Sin Precio</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -161,7 +134,7 @@ export function DashboardScreen({ navigation }: any) {
             onPress={() => navigation.navigate('Categorias')}
           >
             <Text style={styles.statIcon}>🏷️</Text>
-            <Text style={styles.statValue}>{stats?.totalCategories || 0}</Text>
+            <Text style={styles.statValue}>{stats?.categories || 0}</Text>
             <Text style={styles.statLabel}>Categorias</Text>
           </TouchableOpacity>
         </View>
@@ -169,13 +142,13 @@ export function DashboardScreen({ navigation }: any) {
         <View style={styles.valueCard}>
           <Text style={styles.valueLabel}>Valor del Inventario</Text>
           <Text style={styles.valueAmount}>
-            ${(stats?.totalValue || 0).toFixed(2)}
+            ${(stats?.inventory_value || 0).toFixed(2)}
           </Text>
         </View>
 
         {lowStockItems.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚠️ Productos con Stock Bajo</Text>
+            <Text style={styles.sectionTitle}>⚠️ Figuras con Stock Bajo</Text>
             {lowStockItems.map((item) => (
               <View key={item.id} style={styles.lowStockItem}>
                 <View style={styles.lowStockImage}>
@@ -216,10 +189,17 @@ export function DashboardScreen({ navigation }: any) {
           <View style={styles.actionsGrid}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('Productos')}
+              onPress={() => navigation.navigate('Figuras', { filter: 'all' })}
             >
-              <Text style={styles.actionIcon}>📦</Text>
-              <Text style={styles.actionText}>Productos</Text>
+              <Text style={styles.actionIcon}>🎭</Text>
+              <Text style={styles.actionText}>Figuras</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('FigureForm', { figure: null })}
+            >
+              <Text style={styles.actionIcon}>➕</Text>
+              <Text style={styles.actionText}>Nueva Figura</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
@@ -227,13 +207,6 @@ export function DashboardScreen({ navigation }: any) {
             >
               <Text style={styles.actionIcon}>🏷️</Text>
               <Text style={styles.actionText}>Categorias</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Figuras')}
-            >
-              <Text style={styles.actionIcon}>🎭</Text>
-              <Text style={styles.actionText}>Figuras</Text>
             </TouchableOpacity>
           </View>
         </View>
