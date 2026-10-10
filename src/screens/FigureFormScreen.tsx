@@ -50,7 +50,10 @@ export function FigureFormScreen({ navigation, route }: any) {
   const [categoryId, setCategoryId] = useState<number | null>(figure?.category_id || null);
   const [isFeatured, setIsFeatured] = useState(figure?.is_featured || false);
   const [isActive, setIsActive] = useState(figure?.is_active ?? true);
-  const [images, setImages] = useState<string[]>(figure?.images || []);
+  // La foto principal viene aparte en `image`; en la lista de fotos se muestra junto con las demás.
+  const [images, setImages] = useState<string[]>(
+    Array.from(new Set([figure?.image, ...(figure?.images || [])].filter(Boolean) as string[]))
+  );
   const [mainImage, setMainImage] = useState<string>(figure?.image || '');
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -200,8 +203,8 @@ export function FigureFormScreen({ navigation, route }: any) {
         category_id: categoryId || undefined,
         is_featured: isFeatured,
         is_active: isActive,
-        image: mainImage || undefined,
-        images: images.length > 0 ? images : undefined,
+        image: mainImage || (isEditing ? null : undefined),
+        images: isEditing || images.length > 0 ? images : undefined,
       };
 
       if (isEditing) {

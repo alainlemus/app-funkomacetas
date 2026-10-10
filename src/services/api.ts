@@ -198,7 +198,7 @@ export interface FigureInput {
   description?: string;
   cost?: number;
   min_stock?: number;
-  image?: string;
+  image?: string | null;
   images?: string[];
   is_active?: boolean;
   is_featured?: boolean;
