@@ -36,13 +36,44 @@ npm run build:production
 git checkout develop && git merge main && git push origin develop
 ```
 
-## 4. Backend
+## 4. Ambientes
 
-La app usa la API de `sistema-funkos` (`EXPO_PUBLIC_API_URL` en `eas.json`). Las versiones
-del backend (`/version.json`) y de la app son independientes; si un cambio de la API rompe
-la app, sube **major** en ambos y publícalos juntos.
+Cada perfil de `eas.json` fija el ambiente (`APP_ENV`) y la API a la que apunta
+(`EXPO_PUBLIC_API_URL`); `app.config.ts` ajusta nombre e identificadores por ambiente, así que
+los tres se pueden instalar a la vez en el mismo dispositivo.
 
-## 5. Reglas
+| Ambiente | Perfil EAS | Rama | API | App instalada | Identificador |
+|---|---|---|---|---|---|
+| **Local** | `local` (development client; simulador iOS / APK) | cualquiera | `http://sistema-funkos.test/api` (Herd) | Jardín (Local) | `com.funkomacetas.app.local` |
+| **Staging** | `staging` (distribución interna, canal `staging`) | `develop` | `https://dev.eljardindelasmacetas.com/api` | Jardín (Staging) | `com.funkomacetas.app.staging` |
+| **Producción** | `production` (tiendas, canal `production`) | `main` | `https://eljardindelasmacetas.com/api` | El Jardín de las Macetas | `com.funkomacetas.app` |
+
+```bash
+# Desarrollo (Metro) apuntando a cada ambiente
+npm run start:local        # / start:staging / start:production
+
+# Builds
+npm run build:local        # development client para probar en simulador / APK
+npm run build:staging      # testers (iOS ad hoc + APK)
+npm run build:production   # tiendas (iOS + AAB)
+npm run submit:production
+```
+
+- **Local con celular físico:** `sistema-funkos.test` solo resuelve en tu Mac. Usa el simulador
+  de iOS, o cambia `EXPO_PUBLIC_API_URL` a la IP de tu Mac (`http://192.168.1.X/api`).
+- **Solo local** permite http (excepción de ATS en iOS y `usesCleartextTraffic` en Android); staging
+  y producción exigen https.
+- **Staging** necesita el dispositivo registrado en EAS (`eas device:create`) para iOS.
+- El número de build lo sube EAS solo (`autoIncrement` en staging y producción).
+
+## 5. Backend
+
+La app usa la API de `sistema-funkos` (`/version.json` indica su versión). Las versiones del
+backend y de la app son independientes; si un cambio de la API rompe la app, sube **major** en
+la app y deja anotado en el CHANGELOG qué backend requiere.
+
+## 6. Reglas
 
 - Todo lanzamiento a tienda lleva su entrada en `CHANGELOG.md`.
 - Nunca reutilices un número ya publicado.
+- Nunca pongas credenciales en `eas.json` ni en `EXPO_PUBLIC_*` (se incluyen en la app).

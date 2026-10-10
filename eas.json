@@ -4,38 +4,42 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "development": {
+    "local": {
       "developmentClient": true,
       "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api"
-      }
-    },
-    "local": {
-      "env": {
-        "EXPO_PUBLIC_API_URL": "http://sistema-funkos.test/api"
-      }
-    },
-    "staging": {
-      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://el-jardin-de-la-macetas-app-8rssws-51e10e-187-77-212-199.sslip.io/api"
-      },
+        "APP_ENV": "local",
+        "EXPO_PUBLIC_API_URL": "http://sistema-funkos.test/api"
+      }
+    },
+    "staging": {
       "autoIncrement": true,
-      "channel": "staging"
+      "distribution": "internal",
+      "channel": "staging",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "https://dev.eljardindelasmacetas.com/api"
+      }
     },
     "production": {
+      "autoIncrement": true,
+      "channel": "production",
       "android": {
         "buildType": "app-bundle"
       },
       "env": {
+        "APP_ENV": "production",
         "EXPO_PUBLIC_API_URL": "https://eljardindelasmacetas.com/api"
-      },
-      "autoIncrement": true,
-      "channel": "production"
+      }
     }
   },
   "submit": {

@@ -12,6 +12,7 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 - El formulario permite guardar figuras sin precio si están inactivas (las del catálogo del proveedor llegan así).
 
 ### Agregado
+- Tres ambientes (local, staging y producción) con perfiles de EAS que apuntan a su API (`localhost` de Herd, `dev.eljardindelasmacetas.com` y `eljardindelasmacetas.com`), nombre e identificador propios por ambiente y scripts `start:*` y `build:*`.
 - Búsqueda por nombre o SKU en el servidor, filtros (Todas, Activas, Inactivas, Sin precio, Stock bajo) y carga de más resultados al desplazar la lista.
 
 ## [1.1.0] - 2026-10-09
