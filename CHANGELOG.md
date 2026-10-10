@@ -4,7 +4,9 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 
 ## [Sin publicar]
 
-> Al publicar, subir **major (2.0.0)**: requiere backend 1.1.0 o posterior (rutas `/api/figures`).
+## [2.0.0] - 2026-10-09
+
+> Requiere backend 1.1.0 o posterior (rutas `/api/figures`).
 
 ### Cambiado
 - Se adaptó al nuevo modelo: ahora solo hay Categorías y Figuras, y la figura es el producto (precio, costo, stock y fotos). Se quitó la pantalla de "Productos" y el selector de figura del formulario.
