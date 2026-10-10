@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../lib/errors';
 import { colors, fonts } from '../theme';
 
 export function LoginScreen() {
@@ -31,7 +32,7 @@ export function LoginScreen() {
     try {
       await login(email, password);
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al iniciar sesion';
+      const message = getErrorMessage(error, 'Error al iniciar sesion');
       Alert.alert('Error', message);
     } finally {
       setIsLoading(false);

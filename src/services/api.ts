@@ -13,6 +13,7 @@ const getApiUrl = (): string => {
 const API_URL = getApiUrl();
 
 class ApiService {
+  private onUnauthorized: (() => void) | null = null;
   private api: AxiosInstance;
 
   constructor() {
@@ -41,10 +42,17 @@ class ApiService {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           SecureStore.deleteItemAsync('api_token');
+          SecureStore.deleteItemAsync('user');
+          this.onUnauthorized?.();
         }
         return Promise.reject(error);
       }
     );
+  }
+
+  /** Se llama cuando la API responde 401 (token vencido o revocado) para cerrar la sesión en la app. */
+  setUnauthorizedHandler(handler: (() => void) | null) {
+    this.onUnauthorized = handler;
   }
 
   async login(email: string, password: string) {

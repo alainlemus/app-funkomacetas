@@ -171,7 +171,7 @@ export function DashboardScreen({ navigation }: any) {
                   style={styles.addStockBtn}
                   onPress={async () => {
                     try {
-                      await api.updateStock(item.id, item.min_stock + 10);
+                      await api.updateStock(item.id, item.stock + 10);
                       fetchData();
                     } catch {
                       Alert.alert('Error', 'No se pudo actualizar el stock');

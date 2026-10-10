@@ -13,6 +13,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { api } from '../services/api';
+import { getErrorMessage } from '../lib/errors';
 import { Figure } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
@@ -57,16 +58,23 @@ export function FiguresScreen({ navigation, route }: any) {
   const [filter, setFilter] = useState<Filter>('all');
   const requestId = useRef(0);
 
-  // El tablero puede abrir esta pantalla con un filtro (p. ej. "Sin precio").
+  // Al volver a la pestaña (p. ej. tras editar una figura) se recarga la lista; la primera vez la
+  // carga ya la hace el efecto de abajo. El tablero puede abrirla con un filtro (p. ej. "Sin precio").
+  const firstFocus = useRef(true);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       const requested = route?.params?.filter as Filter | undefined;
+      const skip = firstFocus.current && !requested;
+      firstFocus.current = false;
+
       if (requested) {
-        setFilter(requested);
         navigation.setParams({ filter: undefined });
-      } else {
-        load(1, true);
+        if (requested !== filter) {
+          setFilter(requested);
+          return;
+        }
       }
+      if (!skip) load(1, true);
     });
     return unsubscribe;
   }, [navigation, route?.params?.filter, debouncedQuery, filter]);
@@ -130,8 +138,8 @@ export function FiguresScreen({ navigation, route }: any) {
           try {
             await api.deleteFigure(figure.id);
             load(1, true);
-          } catch {
-            Alert.alert('Error', 'No se pudo eliminar la figura');
+          } catch (error: any) {
+            Alert.alert('Error', getErrorMessage(error, 'No se pudo eliminar la figura'));
           }
         },
       },

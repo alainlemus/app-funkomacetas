@@ -18,7 +18,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    api.setUnauthorizedHandler(() => setUser(null));
     checkAuth();
+    return () => api.setUnauthorizedHandler(null);
   }, []);
 
   const checkAuth = async () => {
@@ -46,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const data = await api.login(email, password);
+    // La app es solo para administradores: la API rechazaría todo lo demás con 403.
+    if (!data.user?.is_admin) {
+      await api.logout().catch(() => undefined);
+      throw { response: { data: { message: 'Tu usuario no tiene permisos de administrador.' } } };
+    }
     setUser(data.user);
   };
 

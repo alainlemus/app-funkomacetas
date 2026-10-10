@@ -16,6 +16,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { api } from '../services/api';
+import { getErrorMessage } from '../lib/errors';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
@@ -90,8 +91,8 @@ export function FigureFormScreen({ navigation, route }: any) {
           setMainImage(url);
         }
         setImages([...images, url]);
-      } catch {
-        Alert.alert('Error', 'No se pudo subir la imagen');
+      } catch (error: any) {
+        Alert.alert('Error', getErrorMessage(error, 'No se pudo subir la imagen'));
       } finally {
         setIsLoading(false);
       }
@@ -122,8 +123,8 @@ export function FigureFormScreen({ navigation, route }: any) {
           setMainImage(url);
         }
         setImages([...images, url]);
-      } catch {
-        Alert.alert('Error', 'No se pudo subir la imagen');
+      } catch (error: any) {
+        Alert.alert('Error', getErrorMessage(error, 'No se pudo subir la imagen'));
       } finally {
         setIsLoading(false);
       }
@@ -155,8 +156,8 @@ export function FigureFormScreen({ navigation, route }: any) {
         if (!mainImage && urls.length > 0) {
           setMainImage(urls[0]);
         }
-      } catch {
-        Alert.alert('Error', 'No se pudieron subir las imagenes');
+      } catch (error: any) {
+        Alert.alert('Error', getErrorMessage(error, 'No se pudieron subir las imagenes'));
       } finally {
         setIsLoading(false);
       }
@@ -214,7 +215,7 @@ export function FigureFormScreen({ navigation, route }: any) {
       }
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'No se pudo guardar');
+      Alert.alert('Error', getErrorMessage(error, 'No se pudo guardar'));
     } finally {
       setIsSaving(false);
     }
@@ -308,7 +309,7 @@ export function FigureFormScreen({ navigation, route }: any) {
                       </TouchableOpacity>
                       {img !== mainImage && (
                         <TouchableOpacity style={styles.setMainBtn} onPress={() => setAsMain(img)}>
-                          <Text style={styles.setMainBtnText}>Principal</Text>
+                          <Text style={styles.setMainBtnText}>Hacer principal</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -333,7 +334,7 @@ export function FigureFormScreen({ navigation, route }: any) {
               {isSaving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.saveBtnText}>{isEditing ? 'Actualizar' : 'Crear Producto'}</Text>
+                <Text style={styles.saveBtnText}>{isEditing ? 'Actualizar' : 'Crear Figura'}</Text>
               )}
             </TouchableOpacity>
           </View>

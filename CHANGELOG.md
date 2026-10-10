@@ -14,7 +14,16 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 - El tablero usa los totales de todo el inventario (antes solo contaba la primera página), y sus tarjetas abren el listado ya filtrado.
 - El formulario permite guardar figuras sin precio si están inactivas (las del catálogo del proveedor llegan así).
 
+### Corregido
+- Al iniciar sesión, un usuario que no es administrador ya no entra a la app (antes entraba y todo fallaba); si la sesión vence, la app regresa sola al inicio de sesión.
+- La lista de figuras ya no hace dos peticiones al abrir.
+- El botón "+10" del tablero suma 10 al stock actual (antes lo dejaba en el mínimo más 10).
+- Los errores del servidor (SKU repetido, categoría con figuras, imagen inválida, sin conexión) se muestran con su motivo.
+- El botón para marcar una foto como principal ahora dice "Hacer principal".
+- La foto principal de las figuras del catálogo del proveedor ya aparece en el formulario.
+
 ### Agregado
+- Pruebas automáticas de las pantallas y del servicio de la API (`npm test`).
 - Tres ambientes (local, staging y producción) con perfiles de EAS que apuntan a su API (`localhost` de Herd, `dev.eljardindelasmacetas.com` y `eljardindelasmacetas.com`), nombre e identificador propios por ambiente y scripts `start:*` y `build:*`.
 - Búsqueda por nombre o SKU en el servidor, filtros (Todas, Activas, Inactivas, Sin precio, Stock bajo) y carga de más resultados al desplazar la lista.
 

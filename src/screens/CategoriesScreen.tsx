@@ -13,6 +13,7 @@ import {
   Switch,
 } from 'react-native';
 import { api } from '../services/api';
+import { getErrorMessage } from '../lib/errors';
 import { Category } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
@@ -103,7 +104,7 @@ export function CategoriesScreen({ navigation }: any) {
       setModalVisible(false);
       fetchCategories();
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'No se pudo guardar');
+      Alert.alert('Error', getErrorMessage(error, 'No se pudo guardar'));
     } finally {
       setIsSaving(false);
     }
@@ -122,8 +123,8 @@ export function CategoriesScreen({ navigation }: any) {
             try {
               await api.deleteCategory(category.id);
               fetchCategories();
-            } catch {
-              Alert.alert('Error', 'No se pudo eliminar la categoria');
+            } catch (error: any) {
+              Alert.alert('Error', getErrorMessage(error, 'No se pudo eliminar la categoria'));
             }
           },
         },
