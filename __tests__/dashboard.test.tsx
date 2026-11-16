@@ -20,6 +20,9 @@ const stats = {
   low_stock: 1,
   out_of_stock: 0,
   inventory_value: 1234.5,
+  investment: 5280,
+  investment_figures: 44,
+  investment_missing_cost: 3,
   categories: 7,
   low_stock_items: [makeFigure({ id: 9, name: 'Goku bajo', stock: 2, min_stock: 5 })],
 };
@@ -43,7 +46,24 @@ test('muestra los totales de todo el inventario', async () => {
   expect(getByText('Figuras (119 activas)')).toBeTruthy();
   expect(getByText('466')).toBeTruthy();
   expect(getByText('7')).toBeTruthy();
-  expect(getByText('$1234.50')).toBeTruthy();
+  expect(getByText('$1,234.50')).toBeTruthy();
+});
+
+test('muestra la inversión (costo de las figuras con stock) y avisa si faltan costos', async () => {
+  const { getByText } = await mount();
+
+  expect(getByText('Inversión')).toBeTruthy();
+  expect(getByText('$5,280.00')).toBeTruthy();
+  expect(getByText('Costo de 44 figuras con stock')).toBeTruthy();
+  expect(getByText('3 sin costo capturado')).toBeTruthy();
+});
+
+test('sin figuras sin costo no muestra el aviso', async () => {
+  (api.getFigureStats as jest.Mock).mockResolvedValue({ ...stats, investment_missing_cost: 0 });
+  const { findByText, queryByText } = await mount();
+
+  expect(await findByText('$5,280.00')).toBeTruthy();
+  expect(queryByText(/sin costo capturado/)).toBeNull();
 });
 
 test('las tarjetas abren el listado ya filtrado', async () => {

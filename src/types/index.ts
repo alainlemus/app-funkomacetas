@@ -44,6 +44,11 @@ export interface FigureStats {
   low_stock: number;
   out_of_stock: number;
   inventory_value: number;
+  /** Costo × stock de las figuras con stock ≥ 1 (lo que costaron las macetas en existencia). */
+  investment?: number;
+  investment_figures?: number;
+  /** Figuras con stock que no tienen costo capturado (no suman a la inversión). */
+  investment_missing_cost?: number;
   categories: number;
   low_stock_items: Figure[];
 }

@@ -144,3 +144,38 @@ test('abre con el filtro que mandó el tablero (Sin precio)', async () => {
   await mount({ route: { params: { filter: 'no_price' } } });
   await waitFor(() => expect(getFigures).toHaveBeenCalledWith(expect.objectContaining({ no_price: true })));
 });
+
+test('al volver de una figura refresca las páginas ya cargadas sin regresar al inicio', async () => {
+  let onFocus: () => void = () => undefined;
+  const navigation = {
+    ...makeNavigation(),
+    addListener: jest.fn((_e: string, cb: () => void) => {
+      onFocus = cb;
+      return () => undefined;
+    }),
+  };
+  getFigures
+    .mockResolvedValueOnce(page([makeFigure({ id: 1, name: 'Aang' })], { current_page: 1, last_page: 2, total: 2 }))
+    .mockResolvedValueOnce(page([makeFigure({ id: 2, name: 'Zoro' })], { current_page: 2, last_page: 2, total: 2 }));
+  const { findByText, UNSAFE_getByType, getByText } = render(<FiguresScreen navigation={navigation} route={{ params: {} }} />);
+  await findByText('Aang');
+  fireEvent(UNSAFE_getByType(FlatList), 'endReached');
+  await findByText('Zoro');
+  onFocus(); // primer foco: la carga inicial ya la hizo el efecto
+
+  // El usuario abre una figura, la edita y regresa.
+  getFigures.mockReset();
+  getFigures.mockImplementation(async ({ page: p }: { page: number }) =>
+    p === 1
+      ? page([makeFigure({ id: 1, name: 'Aang editada' })], { current_page: 1, last_page: 2, total: 2 })
+      : page([makeFigure({ id: 2, name: 'Zoro' })], { current_page: 2, last_page: 2, total: 2 })
+  );
+  const list = UNSAFE_getByType(FlatList);
+  await act(async () => onFocus());
+
+  expect(await findByText('Aang editada')).toBeTruthy();
+  expect(getByText('Zoro')).toBeTruthy(); // la página 2 sigue ahí: la lista no se recortó al inicio
+  expect(getFigures).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }));
+  expect(getFigures).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));
+  expect(UNSAFE_getByType(FlatList)).toBe(list); // la lista no se desmonta (no hay spinner a pantalla completa)
+});

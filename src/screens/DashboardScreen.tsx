@@ -17,6 +17,9 @@ import { colors, fonts } from '../theme';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const money = (value?: number) =>
+  `$${(value || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 interface LowStockItem {
   id: number;
   name: string;
@@ -140,11 +143,26 @@ export function DashboardScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.valueCard}>
-          <Text style={styles.valueLabel}>Valor del Inventario</Text>
-          <Text style={styles.valueAmount}>
-            ${(stats?.inventory_value || 0).toFixed(2)}
-          </Text>
+        <View style={styles.valueRow}>
+          {stats?.investment !== undefined && (
+          <View style={[styles.valueCard, styles.valueHalf]}>
+            <Text style={styles.valueLabel}>Inversión</Text>
+            <Text style={styles.valueAmount}>{money(stats?.investment)}</Text>
+            <Text style={styles.valueHint}>
+              Costo de {stats?.investment_figures || 0} figuras con stock
+            </Text>
+            {!!stats?.investment_missing_cost && (
+              <Text style={styles.valueWarning}>
+                {stats.investment_missing_cost} sin costo capturado
+              </Text>
+            )}
+          </View>
+          )}
+          <View style={[styles.valueCard, styles.valueHalf]}>
+            <Text style={styles.valueLabel}>Valor del Inventario</Text>
+            <Text style={styles.valueAmount}>{money(stats?.inventory_value)}</Text>
+            <Text style={styles.valueHint}>Precio de venta × stock</Text>
+          </View>
         </View>
 
         {lowStockItems.length > 0 && (
@@ -319,12 +337,35 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  valueRow: {
+    flexDirection: 'row',
+    marginHorizontal: 12,
+    gap: 12,
+  },
+  valueHalf: {
+    flex: 1,
+    marginHorizontal: 0,
+    paddingHorizontal: 12,
+  },
+  valueHint: {
+    fontSize: 11,
+    color: colors.muted,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  valueWarning: {
+    fontSize: 11,
+    color: colors.danger,
+    fontFamily: fonts.semibold,
+    marginTop: 2,
+    textAlign: 'center',
+  },
   valueLabel: {
     fontSize: 14,
     color: colors.muted,
   },
   valueAmount: {
-    fontSize: 28,
+    fontSize: 22,
     fontFamily: fonts.display,
     color: colors.primary,
     marginTop: 4,

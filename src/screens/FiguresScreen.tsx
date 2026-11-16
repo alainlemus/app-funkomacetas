@@ -57,9 +57,11 @@ export function FiguresScreen({ navigation, route }: any) {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const requestId = useRef(0);
+  const loadedPages = useRef(1);
 
-  // Al volver a la pestaña (p. ej. tras editar una figura) se recarga la lista; la primera vez la
-  // carga ya la hace el efecto de abajo. El tablero puede abrirla con un filtro (p. ej. "Sin precio").
+  // Al volver a la pestaña (p. ej. tras editar una figura) se refrescan las páginas ya cargadas sin
+  // regresar al inicio, para que el usuario siga donde iba; la primera vez la carga ya la hace el
+  // efecto de abajo. El tablero puede abrirla con un filtro (p. ej. "Sin precio").
   const firstFocus = useRef(true);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -74,7 +76,7 @@ export function FiguresScreen({ navigation, route }: any) {
           return;
         }
       }
-      if (!skip) load(1, true);
+      if (!skip) reloadLoaded();
     });
     return unsubscribe;
   }, [navigation, route?.params?.filter, debouncedQuery, filter]);
@@ -89,21 +91,28 @@ export function FiguresScreen({ navigation, route }: any) {
     load(1, true);
   }, [debouncedQuery, filter]);
 
+  const fetchPage = useCallback(
+    (nextPage: number) =>
+      api.getFigures({
+        page: nextPage,
+        per_page: PAGE_SIZE,
+        search: debouncedQuery || undefined,
+        ...filterParams(filter),
+      }),
+    [debouncedQuery, filter]
+  );
+
   const load = useCallback(
     async (nextPage: number, replace: boolean) => {
       const id = ++requestId.current;
       try {
-        const response = await api.getFigures({
-          page: nextPage,
-          per_page: PAGE_SIZE,
-          search: debouncedQuery || undefined,
-          ...filterParams(filter),
-        });
+        const response = await fetchPage(nextPage);
         if (id !== requestId.current) return; // llegó una respuesta más nueva
         setFigures((prev) => (replace ? response.data : [...prev, ...response.data]));
         setTotal(response.total);
         setPage(response.current_page);
         setLastPage(response.last_page);
+        loadedPages.current = response.current_page;
       } catch {
         if (id === requestId.current) Alert.alert('Error', 'No se pudieron cargar las figuras');
       } finally {
@@ -114,8 +123,34 @@ export function FiguresScreen({ navigation, route }: any) {
         }
       }
     },
-    [debouncedQuery, filter]
+    [fetchPage]
   );
+
+  /** Vuelve a pedir todas las páginas ya cargadas y reemplaza la lista de una vez (conserva el scroll). */
+  const reloadLoaded = useCallback(async () => {
+    const id = ++requestId.current;
+    const pages = Math.max(1, loadedPages.current);
+    try {
+      const responses = await Promise.all(Array.from({ length: pages }, (_, i) => fetchPage(i + 1)));
+      if (id !== requestId.current) return;
+      const seen = new Set<number>();
+      const merged = responses.flatMap((r) => r.data).filter((f) => !seen.has(f.id) && seen.add(f.id));
+      const last = responses[responses.length - 1];
+      setFigures(merged);
+      setTotal(last.total);
+      setLastPage(last.last_page);
+      const current = Math.min(pages, last.last_page || 1);
+      setPage(current);
+      loadedPages.current = current;
+    } catch {
+      if (id === requestId.current) Alert.alert('Error', 'No se pudieron cargar las figuras');
+    } finally {
+      if (id === requestId.current) {
+        setIsLoading(false);
+        setRefreshing(false);
+      }
+    }
+  }, [fetchPage]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -137,7 +172,7 @@ export function FiguresScreen({ navigation, route }: any) {
         onPress: async () => {
           try {
             await api.deleteFigure(figure.id);
-            load(1, true);
+            reloadLoaded();
           } catch (error: any) {
             Alert.alert('Error', getErrorMessage(error, 'No se pudo eliminar la figura'));
           }

@@ -4,6 +4,14 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 
 ## [Sin publicar]
 
+> La tarjeta de Inversión requiere backend 1.7.0 o posterior (campo `investment` en `/api/figures/stats`); con un backend anterior simplemente no aparece.
+
+### Agregado
+- Tablero: tarjeta **Inversión**, la suma de costo × stock de todas las figuras con stock de 1 o más, con cuántas figuras cuenta y un aviso de las que no tienen costo capturado.
+
+### Corregido
+- Al abrir una figura desde la lista y regresar, la lista ya no vuelve al inicio: se refrescan las páginas cargadas y el usuario sigue donde iba. Lo mismo al eliminar una figura.
+
 ## [2.0.0] - 2026-10-09
 
 > Requiere backend 1.1.0 o posterior (rutas `/api/figures`).
