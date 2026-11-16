@@ -21,7 +21,6 @@
     "staging": {
       "autoIncrement": true,
       "distribution": "internal",
-      "channel": "staging",
       "android": {
         "buildType": "apk"
       },
@@ -32,13 +31,19 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production",
       "android": {
         "buildType": "app-bundle"
       },
       "env": {
         "APP_ENV": "production",
         "EXPO_PUBLIC_API_URL": "https://eljardindelasmacetas.com/api"
+      }
+    },
+    "production-apk": {
+      "extends": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
       }
     }
   },

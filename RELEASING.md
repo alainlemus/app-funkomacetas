@@ -56,6 +56,7 @@ npm run start:local        # / start:staging / start:production
 npm run build:local        # development client para probar en simulador / APK
 npm run build:staging      # testers (iOS ad hoc + APK)
 npm run build:production   # tiendas (iOS + AAB)
+npm run build:production:apk   # APK instalable apuntando a producción (solo Android)
 npm run submit:production
 ```
 
