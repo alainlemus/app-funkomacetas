@@ -4,6 +4,8 @@ Formato: cada versión publicada en tienda. Ver `RELEASING.md`.
 
 ## [Sin publicar]
 
+## [2.1.0] - 2026-11-15
+
 > La tarjeta de Inversión requiere backend 1.7.0 o posterior (campo `investment` en `/api/figures/stats`); con un backend anterior simplemente no aparece.
 
 ### Agregado
